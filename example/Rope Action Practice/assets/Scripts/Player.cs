@@ -30,6 +30,8 @@ public class Player : MonoBehaviour
     void Start()
     {
         rigid = GetComponent<Rigidbody>();
+
+        powerI.text = power.ToString();
     }
 
   

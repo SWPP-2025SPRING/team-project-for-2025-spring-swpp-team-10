@@ -20,9 +20,9 @@ public class RopeAction : MonoBehaviour
 
     SpringJoint sj;
 
-    // [Header("Spring")]
-    // public float spring;
-    // public float damper, mass; 
+    [Header("Spring")]
+    public float spring;
+    public float damper, mass; 
 
     [Header("Setting Input")]
     public TMP_InputField springI;
@@ -33,6 +33,10 @@ public class RopeAction : MonoBehaviour
     {
         cam = Camera.main;
         lr = GetComponent<LineRenderer>();
+
+        springI.text = spring.ToString();
+        damperI.text = damper.ToString();
+        massI.text = mass.ToString();
     }
 
     void Update()
