@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Unity.VisualScripting;
 
 // https://www.youtube.com/watch?v=-E_pRXqNYSk 참고
 public class RopeAction : MonoBehaviour
@@ -17,12 +18,14 @@ public class RopeAction : MonoBehaviour
     RaycastHit hit;
     LineRenderer lr;
     GameObject grapObject = null;
+    Transform hitPoint;
 
     SpringJoint sj;
 
     [Header("Spring")]
     public float spring;
-    public float damper, mass; 
+    public float damper, mass;
+    public float grapDistance = 50f;
 
     [Header("Setting Input")]
     public TMP_InputField springI;
@@ -33,6 +36,7 @@ public class RopeAction : MonoBehaviour
     {
         cam = Camera.main;
         lr = GetComponent<LineRenderer>();
+        hitPoint = transform.GetChild(0);
 
         springI.text = spring.ToString();
         damperI.text = damper.ToString();
@@ -54,10 +58,13 @@ public class RopeAction : MonoBehaviour
 
     void RopeShoot()
     {
-        if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 100f, GrapplingObj)) {
+        if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, grapDistance, GrapplingObj)) {
             if (hit.collider.gameObject == gameObject)
                 return;
             grapObject = hit.collider.gameObject;
+
+            hitPoint.SetParent(grapObject.transform);
+            hitPoint.position = hit.point;
 
             onGrappling = true;
             // LineRenderer
@@ -73,7 +80,7 @@ public class RopeAction : MonoBehaviour
             sj.connectedAnchor = hit.point;
 
             sj.maxDistance = dis;
-            sj.minDistance = dis * 0.9f;
+            sj.minDistance = dis;
             sj.damper = GetIntValue(damperI);
             sj.spring = GetIntValue(springI);
             sj.massScale = GetIntValue(massI);
@@ -83,6 +90,7 @@ public class RopeAction : MonoBehaviour
     void EndShoot()
     {
         grapObject = null;
+        hitPoint.SetParent(this.transform);
         onGrappling = false;
         lr.positionCount = 0;
         Destroy(sj);
@@ -92,13 +100,15 @@ public class RopeAction : MonoBehaviour
     {
         if (onGrappling) {
             lr.SetPosition(0, transform.position);
+            lr.SetPosition(1, hitPoint.position);
+            sj.connectedAnchor = hitPoint.position;
         }
     }
 
     void DrawOutline()
     {
         // 마우스가 가리키는 오브젝트의 외곽선 표시
-        if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 100f, GrapplingObj)) {
+        if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, grapDistance, GrapplingObj)) {
             if (hit.collider.gameObject != gameObject)
                 hit.collider.gameObject.GetComponent<DrawOutline>().Draw();
         }

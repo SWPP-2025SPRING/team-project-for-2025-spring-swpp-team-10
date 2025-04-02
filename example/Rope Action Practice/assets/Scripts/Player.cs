@@ -14,11 +14,18 @@ public class Player : MonoBehaviour
     public Transform cam;
     public Vector3 initPos;
 
+
     [Header("Boost")]
+    [Range(0, 1)] public float currentBoostEnergy;
+    public float energyUsageRatePerSeconds;
+    public float burstEnergyUsage;
+    public float energyRecoveryRatePerSeconds;
     [Tooltip("순간 가속 (power에 비례)")]
     public float burstBoostRatio = 1.2f;
     [Tooltip("지속적인 가속 (power에 비례)")]
     public float boostRatio = 0.15f;
+    public bool isBoost;
+
 
     [Header("Setting Input")]
     public TMP_InputField powerI;
@@ -30,6 +37,9 @@ public class Player : MonoBehaviour
     void Start()
     {
         rigid = GetComponent<Rigidbody>();
+
+        currentBoostEnergy = 1;
+        isBoost = false;
 
         powerI.text = power.ToString();
     }
@@ -54,6 +64,7 @@ public class Player : MonoBehaviour
             Init();
 
         Boost();
+        BoostEnergyControl();
     }
 
 
@@ -84,16 +95,37 @@ public class Player : MonoBehaviour
 
     void Boost()
     {
-        if (!GetComponent<RopeAction>().onGrappling)
+        if (!GetComponent<RopeAction>().onGrappling || Input.GetKeyUp(KeyCode.LeftShift) || currentBoostEnergy <= 0) {
+            isBoost = false;
             return;
+        }
 
         Vector3 vel = Vector3.zero;
-        if (Input.GetKey(KeyCode.LeftShift)) {
+        // 지속성 부스트
+        if (isBoost) { 
             vel = rigid.velocity.normalized;
             rigid.AddForce(vel * GetIntValue(powerI) * Time.deltaTime * boostRatio, ForceMode.Force);
         }
-        if (Input.GetKeyDown(KeyCode.LeftShift)) {
+        // 즉발성 부스트
+        if (Input.GetKeyDown(KeyCode.LeftShift) && currentBoostEnergy >= burstEnergyUsage) { 
+            isBoost = true;
             rigid.AddForce(vel * GetIntValue(powerI) * burstBoostRatio, ForceMode.Acceleration);
+            currentBoostEnergy -= burstEnergyUsage;
+        }
+    }
+
+    void BoostEnergyControl()
+    {
+        if (isBoost) { // 부스터 사용중
+            currentBoostEnergy -= energyUsageRatePerSeconds * Time.deltaTime;
+            if (currentBoostEnergy < 0)
+                currentBoostEnergy = 0;
+        }
+        else {
+            if (currentBoostEnergy < 1)
+                currentBoostEnergy += energyRecoveryRatePerSeconds * Time.deltaTime;
+            else
+                currentBoostEnergy = 1;
         }
     }
 
