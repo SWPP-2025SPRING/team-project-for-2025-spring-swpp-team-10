@@ -26,10 +26,11 @@ public class RopeAction : MonoBehaviour
     public float spring;
     public float damper, mass;
     public float grapDistance = 50f;
+    public float retractorSpeed;
 
     [Header("Setting Input")]
     public TMP_InputField springI;
-    public TMP_InputField damperI, massI;
+    public TMP_InputField damperI, massI, retractorSpeedI;
 
 
     void Start()
@@ -41,6 +42,7 @@ public class RopeAction : MonoBehaviour
         springI.text = spring.ToString();
         damperI.text = damper.ToString();
         massI.text = mass.ToString();
+        retractorSpeedI.text = retractorSpeed.ToString();
     }
 
     void Update()
@@ -51,6 +53,18 @@ public class RopeAction : MonoBehaviour
         if (Input.GetMouseButtonUp(0)) {
             EndShoot();
         }
+
+
+        if (Input.GetMouseButton(1)) {
+            ShortenRope(40);
+        }
+        if (Input.GetKey(KeyCode.Q)) {
+            ShortenRope(GetIntValue(retractorSpeedI));
+        }
+        if (Input.GetKey(KeyCode.E)) {
+            ExtendRope();
+        }
+        
 
         DrawOutline();
         DrawRope();
@@ -95,6 +109,26 @@ public class RopeAction : MonoBehaviour
         lr.positionCount = 0;
         Destroy(sj);
     }
+
+
+    void ShortenRope(float value)
+    {
+        if (!onGrappling || sj.maxDistance <= 1) 
+            return;
+
+        sj.maxDistance = sj.minDistance = sj.maxDistance - value * Time.deltaTime;
+
+        if (sj.maxDistance < 1)
+            sj.maxDistance = sj.minDistance = 1;
+    }
+    void ExtendRope()
+    {
+        if (!onGrappling || sj.maxDistance > grapDistance) 
+            return;
+
+        sj.maxDistance = sj.minDistance = sj.maxDistance + GetIntValue(retractorSpeedI) * Time.deltaTime;
+    }
+    
 
     void DrawRope()
     {

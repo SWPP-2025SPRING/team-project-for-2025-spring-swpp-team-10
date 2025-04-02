@@ -9,6 +9,9 @@ public class Player : MonoBehaviour
 {
     [Tooltip("이동 시 가해지는 힘")]
     public float power;
+    [Tooltip("점프 시 가해지는 힘")]
+    public float jumpPower;
+    public GroundCheck groundCheck;
     [Tooltip("최대 속도 (power에 비례)")]
     public float maxVelocityRatio;
     public Transform cam;
@@ -47,20 +50,11 @@ public class Player : MonoBehaviour
   
     void Update()
     {
-        float hor = Input.GetAxisRaw("Horizontal");
-        float ver = Input.GetAxisRaw("Vertical");
+        AddForce();
+        if (Input.GetKeyDown(KeyCode.Space))
+            Jump();
 
-        Vector3 forwardVec = new Vector3(cam.forward.x, 0, cam.forward.z).normalized;
-        Vector3 rightVec = new Vector3(cam.right.x, 0, cam.right.z).normalized;
-        Vector3 moveVec = (forwardVec * ver + rightVec * hor).normalized;
-
-        AddForce(moveVec);
-
-        // if (Input.GetKeyDown(KeyCode.Q)) {
-        //     Debug.Log(cam.forward + "," + cam.right + "," + moveVec);
-        // }
-
-        if (Input.GetKeyDown(KeyCode.R))
+        if (Input.GetKeyDown(KeyCode.R) || transform.position.y < -100)
             Init();
 
         Boost();
@@ -68,9 +62,23 @@ public class Player : MonoBehaviour
     }
 
 
-    // https://www.youtube.com/watch?v=8dFDRWCQ3Hs 참고
-    void AddForce(Vector3 moveVec)
+    void Init()
     {
+        transform.position = initPos;
+        rigid.velocity = Vector3.zero;
+    }
+
+
+    // AddForce : https://www.youtube.com/watch?v=8dFDRWCQ3Hs 참고
+    void AddForce()
+    {
+        float hor = Input.GetAxisRaw("Horizontal");
+        float ver = Input.GetAxisRaw("Vertical");
+
+        Vector3 forwardVec = new Vector3(cam.forward.x, 0, cam.forward.z).normalized;
+        Vector3 rightVec = new Vector3(cam.right.x, 0, cam.right.z).normalized;
+        Vector3 moveVec = (forwardVec * ver + rightVec * hor).normalized;
+
         float maxVelocity = GetIntValue(powerI) * maxVelocityRatio;
 
         float addSpeed, accelSpeed, currentSpeed;
@@ -83,15 +91,18 @@ public class Player : MonoBehaviour
         rigid.AddForce(moveVec * accelSpeed, ForceMode.Force);
 
         if (rigid.velocity.magnitude > maxVelocity) {
-            Debug.Log(rigid.velocity.magnitude + " " + new Vector2(rigid.velocity.x, rigid.velocity.z) + ", " + new Vector2(moveVec.x, moveVec.z));
+            Debug.Log(rigid.velocity.magnitude + " vel : " + new Vector2(rigid.velocity.x, rigid.velocity.z) + ", forceDir : " + new Vector2(moveVec.x, moveVec.z));
         }
     }
 
-    void Init()
+
+    void Jump()
     {
-        transform.position = initPos;
-        rigid.velocity = Vector3.zero;
+        if (groundCheck.isGround) {
+            rigid.AddForce(Vector3.up * jumpPower, ForceMode.Acceleration);
+        }
     }
+    
 
     void Boost()
     {
@@ -100,10 +111,9 @@ public class Player : MonoBehaviour
             return;
         }
 
-        Vector3 vel = Vector3.zero;
+        Vector3 vel = rigid.velocity.normalized;
         // 지속성 부스트
         if (isBoost) { 
-            vel = rigid.velocity.normalized;
             rigid.AddForce(vel * GetIntValue(powerI) * Time.deltaTime * boostRatio, ForceMode.Force);
         }
         // 즉발성 부스트
@@ -127,6 +137,13 @@ public class Player : MonoBehaviour
             else
                 currentBoostEnergy = 1;
         }
+    }
+
+
+    // https://coding-shop.tistory.com/255 내용 참고
+    void OnCollisionEnter(Collision collision)
+    {
+        
     }
 
     int GetIntValue(TMP_InputField inputField)
