@@ -8,22 +8,16 @@ public class PingPong : MonoBehaviour
     public Type inputType;
     public Transform start, end;
     public Vector3 startVec, endVec;
-    public float speed;
+    [Tooltip("Start -> End까지 가는 데 걸리는 시간")]
+    public float moveTime;
     [Tooltip("다른 움직이는 오브젝트와의 핑퐁 타이밍 조절")]
     public float offset;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
     void Update()
     {
         Vector3 startPos = inputType == Type.Transform ? start.position : startVec;
         Vector3 endPos = inputType == Type.Transform ? end.position : endVec;
-        transform.position = Vector3.Lerp(startPos, endPos, Mathf.PingPong(offset + Time.time * speed, 1));
+        transform.position = Vector3.Lerp(startPos, endPos, Mathf.PingPong(offset + Time.time / moveTime, 1));
     }
 }
 

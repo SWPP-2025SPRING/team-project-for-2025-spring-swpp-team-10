@@ -8,25 +8,29 @@ using UnityEngine.PlayerLoop;
 public class Player : MonoBehaviour
 {
     [Tooltip("이동 시 가해지는 힘")]
-    public float power;
+    public float power = 1000;
+    [Tooltip("최대 속도")]
+    public float maxVelocity = 20;
     [Tooltip("점프 시 가해지는 힘")]
-    public float jumpPower;
-    public GroundCheck groundCheck;
-    [Tooltip("최대 속도 (power에 비례)")]
-    public float maxVelocityRatio;
-    public Transform cam;
+    public float jumpPower = 600;
     public Vector3 initPos;
+
+    public GroundCheck groundCheck;
+    public Transform cam;
 
 
     [Header("Boost")]
     [Range(0, 1)] public float currentBoostEnergy;
+    [Tooltip("1초 당 쓰는 에너지")]
     public float energyUsageRatePerSeconds;
+    [Tooltip("부스트 시작 시 순간적으로 쓰는 에너지 (에너지가 해당 값 이상이어야 부스트 발동 가능)")]
     public float burstEnergyUsage;
+    [Tooltip("부스트 상태가 아닐 때 1초 당 회복되는 에너지")]
     public float energyRecoveryRatePerSeconds;
-    [Tooltip("순간 가속 (power에 비례)")]
-    public float burstBoostRatio = 1.2f;
-    [Tooltip("지속적인 가속 (power에 비례)")]
-    public float boostRatio = 0.15f;
+    [Tooltip("순간 가속")]
+    public float burstBoostPower = 1000;
+    [Tooltip("지속적인 가속")]
+    public float boostPower = 400;
     public bool isBoost;
 
 
@@ -79,8 +83,6 @@ public class Player : MonoBehaviour
         Vector3 rightVec = new Vector3(cam.right.x, 0, cam.right.z).normalized;
         Vector3 moveVec = (forwardVec * ver + rightVec * hor).normalized;
 
-        float maxVelocity = GetIntValue(powerI) * maxVelocityRatio;
-
         float addSpeed, accelSpeed, currentSpeed;
 
         currentSpeed = Vector2.Dot(new Vector2(rigid.velocity.x, rigid.velocity.z), new Vector2(moveVec.x, moveVec.z));
@@ -114,12 +116,12 @@ public class Player : MonoBehaviour
         Vector3 vel = rigid.velocity.normalized;
         // 지속성 부스트
         if (isBoost) { 
-            rigid.AddForce(vel * GetIntValue(powerI) * Time.deltaTime * boostRatio, ForceMode.Force);
+            rigid.AddForce(vel * Time.deltaTime * boostPower, ForceMode.Force);
         }
         // 즉발성 부스트
         if (Input.GetKeyDown(KeyCode.LeftShift) && currentBoostEnergy >= burstEnergyUsage) { 
             isBoost = true;
-            rigid.AddForce(vel * GetIntValue(powerI) * burstBoostRatio, ForceMode.Acceleration);
+            rigid.AddForce(vel * burstBoostPower, ForceMode.Acceleration);
             currentBoostEnergy -= burstEnergyUsage;
         }
     }

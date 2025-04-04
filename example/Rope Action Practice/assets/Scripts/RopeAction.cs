@@ -25,7 +25,9 @@ public class RopeAction : MonoBehaviour
     [Header("Spring")]
     public float spring;
     public float damper, mass;
+    [Tooltip("와이어를 걸 수 있는 최대 거리")]
     public float grapDistance = 50f;
+    [Tooltip("줄 감기/풀기 속도")]
     public float retractorSpeed;
 
     [Header("Setting Input")]

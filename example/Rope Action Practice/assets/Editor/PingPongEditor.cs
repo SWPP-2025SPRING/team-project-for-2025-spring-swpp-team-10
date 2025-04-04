@@ -54,7 +54,7 @@ public class PingPongEditor : Editor
             p.startVec = EditorGUILayout.Vector3Field("Start Vec", p.startVec);
             p.endVec = EditorGUILayout.Vector3Field("End Vec", p.endVec);
         }
-        p.speed = EditorGUILayout.FloatField("Speed", p.speed);
+        p.moveTime = EditorGUILayout.FloatField("Move Time", p.moveTime);
         // GUIContent 이용하면 툴팁 사용 가능
         p.offset = EditorGUILayout.FloatField(new GUIContent("Offset", "다른 움직이는 오브젝트와의 핑퐁 타이밍 조절"), p.offset);
     }
