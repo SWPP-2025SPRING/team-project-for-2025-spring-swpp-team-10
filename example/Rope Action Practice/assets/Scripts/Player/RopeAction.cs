@@ -51,6 +51,8 @@ public class RopeAction : MonoBehaviour
 
     void Update()
     {
+        GetInputField();
+
         if (Input.GetMouseButtonDown(0)) {
             RopeShoot();
         }
@@ -58,12 +60,11 @@ public class RopeAction : MonoBehaviour
             EndShoot();
         }
 
-
         if (Input.GetMouseButton(1)) {
-            ShortenRope(40);
+            ShortenRope(40); // 빠르게 오브젝트에 접근
         }
         if (Input.GetKey(KeyCode.Q)) {
-            ShortenRope(GetIntValue(retractorSpeedI));
+            ShortenRope(retractorSpeed);
         }
         if (Input.GetKey(KeyCode.E)) {
             ExtendRope();
@@ -101,9 +102,9 @@ public class RopeAction : MonoBehaviour
 
             sj.maxDistance = dis;
             sj.minDistance = dis;
-            sj.damper = GetIntValue(damperI);
-            sj.spring = GetIntValue(springI);
-            sj.massScale = GetIntValue(massI);
+            sj.damper = damper;
+            sj.spring = spring;
+            sj.massScale = mass;
 
             // 플레이어의 형태를 sphere로 변환
             meshConverter.ConvertToSphere();
@@ -124,6 +125,10 @@ public class RopeAction : MonoBehaviour
     {
         if (!onGrappling || sj.maxDistance <= 1) 
             return;
+        
+        if (sj.maxDistance < 20) {
+            value *= Mathf.Lerp(0.2f, 1, (sj.maxDistance - 1) / 19f); // maxDist가 1일 때는 0.4f, 20일 때는 1f
+        }
 
         sj.maxDistance = sj.minDistance = sj.maxDistance - value * Time.deltaTime;
 
@@ -171,6 +176,15 @@ public class RopeAction : MonoBehaviour
             if (!MeshConverter.isSphere && onGrappling)
                 EndShoot();
         }
+    }
+
+
+    void GetInputField()
+    {
+        spring = GetIntValue(springI);
+        damper = GetIntValue(damperI);
+        mass = GetIntValue(massI);
+        retractorSpeed = GetIntValue(retractorSpeedI);
     }
 
 

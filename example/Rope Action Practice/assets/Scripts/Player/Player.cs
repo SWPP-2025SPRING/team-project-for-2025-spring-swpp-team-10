@@ -31,34 +31,41 @@ public class Player : MonoBehaviour
     [Tooltip("순간 가속")]
     public float burstBoostPower = 1000;
     [Tooltip("지속적인 가속")]
-    public float boostPower = 400;
+    public float sustainedBoostPower = 400;
     public bool isBoost;
-
 
     [Header("Setting Input")]
     public TMP_InputField powerI;
     public TMP_InputField massI;
+    public TMP_InputField maxVelocityI;
+    public TMP_InputField burstBoostI;
+    public TMP_InputField sustainedBoostI;
 
+    [Header("Debug")]
+    public TextMeshProUGUI velocityTxt;
 
     private Rigidbody rb;
-    private MeshConverter meshConverter;
 
     
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        meshConverter = GetComponent<MeshConverter>();
 
         currentBoostEnergy = 1;
         isBoost = false;
 
         powerI.text = power.ToString();
         massI.text = rb.mass.ToString();
+        maxVelocityI.text = maxVelocity.ToString();
+        burstBoostI.text = burstBoostPower.ToString();
+        sustainedBoostI.text = sustainedBoostPower.ToString();
     }
 
   
     void Update()
     {
+        GetInputField();
+
         if (MeshConverter.isSphere) AddForce();
         else AddVelocity();
 
@@ -71,7 +78,7 @@ public class Player : MonoBehaviour
         Boost();
         BoostEnergyControl();
 
-        rb.mass = GetFloatValue(massI);
+        velocityTxt.text = $"Velocity : {rb.velocity.magnitude:F1}";
     }
 
 
@@ -93,7 +100,7 @@ public class Player : MonoBehaviour
         addSpeed = maxVelocity - currentSpeed;
         if (addSpeed <= 0)
             return;
-        accelSpeed = Mathf.Min(addSpeed, GetIntValue(powerI) * Time.deltaTime);
+        accelSpeed = Mathf.Min(addSpeed, power * Time.deltaTime);
         rb.AddForce(moveDir * accelSpeed, ForceMode.Force);
 
         if (rb.velocity.magnitude > maxVelocity) {
@@ -149,7 +156,7 @@ public class Player : MonoBehaviour
         Vector3 vel = rb.velocity.normalized;
         // 지속성 부스트
         if (isBoost) { 
-            rb.AddForce(vel * Time.deltaTime * boostPower, ForceMode.Force);
+            rb.AddForce(vel * Time.deltaTime * sustainedBoostPower, ForceMode.Force);
         }
         // 즉발성 부스트
         if (Input.GetKeyDown(KeyCode.LeftShift) && currentBoostEnergy >= burstEnergyUsage) { 
@@ -180,6 +187,16 @@ public class Player : MonoBehaviour
     void OnCollisionEnter(Collision collision)
     {
         
+    }
+
+
+    void GetInputField()
+    {
+        power = GetIntValue(powerI);
+        rb.mass = GetFloatValue(massI);
+        maxVelocity = GetFloatValue(maxVelocityI);
+        burstBoostPower = GetIntValue(burstBoostI);
+        sustainedBoostPower = GetIntValue(sustainedBoostI);
     }
 
     int GetIntValue(TMP_InputField inputField)
