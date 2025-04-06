@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.PlayerLoop;
+using System.Data.Common;
 
 public class Player : MonoBehaviour
 {
@@ -36,25 +37,31 @@ public class Player : MonoBehaviour
 
     [Header("Setting Input")]
     public TMP_InputField powerI;
+    public TMP_InputField massI;
 
 
-    private Rigidbody rigid;
+    private Rigidbody rb;
+    private MeshConverter meshConverter;
 
     
     void Start()
     {
-        rigid = GetComponent<Rigidbody>();
+        rb = GetComponent<Rigidbody>();
+        meshConverter = GetComponent<MeshConverter>();
 
         currentBoostEnergy = 1;
         isBoost = false;
 
         powerI.text = power.ToString();
+        massI.text = rb.mass.ToString();
     }
 
   
     void Update()
     {
-        AddForce();
+        if (MeshConverter.isSphere) AddForce();
+        else AddVelocity();
+
         if (Input.GetKeyDown(KeyCode.Space))
             Jump();
 
@@ -63,18 +70,55 @@ public class Player : MonoBehaviour
 
         Boost();
         BoostEnergyControl();
+
+        rb.mass = GetFloatValue(massI);
     }
 
 
     void Init()
     {
         transform.position = initPos;
-        rigid.velocity = Vector3.zero;
+        rb.velocity = Vector3.zero;
     }
 
 
     // AddForce : https://www.youtube.com/watch?v=8dFDRWCQ3Hs 참고
     void AddForce()
+    {
+        Vector3 moveDir = GetInputMoveDir();
+
+        float addSpeed, accelSpeed, currentSpeed;
+
+        currentSpeed = Vector2.Dot(new Vector2(rb.velocity.x, rb.velocity.z), new Vector2(moveDir.x, moveDir.z));
+        addSpeed = maxVelocity - currentSpeed;
+        if (addSpeed <= 0)
+            return;
+        accelSpeed = Mathf.Min(addSpeed, GetIntValue(powerI) * Time.deltaTime);
+        rb.AddForce(moveDir * accelSpeed, ForceMode.Force);
+
+        if (rb.velocity.magnitude > maxVelocity) {
+            //Debug.Log(rb.velocity.magnitude + " vel : " + new Vector2(rb.velocity.x, rb.velocity.z) + ", forceDir : " + new Vector2(moveVec.x, moveVec.z));
+        }
+    }
+
+    void AddVelocity()
+    {
+        Vector3 moveDir = GetInputMoveDir();
+
+        float addSpeed, accelSpeed, currentSpeed;
+
+        float _maxVelocity = Input.GetKey(KeyCode.LeftShift) ? maxVelocity * 1.2f : maxVelocity / 1.2f;
+
+        currentSpeed = Vector2.Dot(new Vector2(rb.velocity.x, rb.velocity.z), new Vector2(moveDir.x, moveDir.z));
+        addSpeed = _maxVelocity - currentSpeed;
+        if (addSpeed <= 0)
+            return;
+        accelSpeed = Mathf.Min(addSpeed, _maxVelocity * 2f * Time.deltaTime);
+        Debug.Log(addSpeed + "," + _maxVelocity * Time.deltaTime);
+        rb.velocity += moveDir * accelSpeed;
+    }
+
+    Vector3 GetInputMoveDir()
     {
         float hor = Input.GetAxisRaw("Horizontal");
         float ver = Input.GetAxisRaw("Vertical");
@@ -83,51 +127,39 @@ public class Player : MonoBehaviour
         Vector3 rightVec = new Vector3(cam.right.x, 0, cam.right.z).normalized;
         Vector3 moveVec = (forwardVec * ver + rightVec * hor).normalized;
 
-        float addSpeed, accelSpeed, currentSpeed;
-
-        currentSpeed = Vector2.Dot(new Vector2(rigid.velocity.x, rigid.velocity.z), new Vector2(moveVec.x, moveVec.z));
-        addSpeed = maxVelocity - currentSpeed;
-        if (addSpeed <= 0)
-            return;
-        accelSpeed = Mathf.Min(addSpeed, GetIntValue(powerI) * Time.deltaTime);
-        rigid.AddForce(moveVec * accelSpeed, ForceMode.Force);
-
-        if (rigid.velocity.magnitude > maxVelocity) {
-            Debug.Log(rigid.velocity.magnitude + " vel : " + new Vector2(rigid.velocity.x, rigid.velocity.z) + ", forceDir : " + new Vector2(moveVec.x, moveVec.z));
-        }
+        return moveVec;
     }
 
 
     void Jump()
     {
         if (groundCheck.isGround) {
-            rigid.AddForce(Vector3.up * jumpPower, ForceMode.Acceleration);
+            rb.AddForce(Vector3.up * jumpPower, ForceMode.Acceleration);
         }
     }
     
 
     void Boost()
     {
-        
-
         if (!GetComponent<RopeAction>().onGrappling || Input.GetKeyUp(KeyCode.LeftShift) || currentBoostEnergy <= 0) {
             isBoost = false;
             return;
         }
 
-        Vector3 vel = rigid.velocity.normalized;
+        Vector3 vel = rb.velocity.normalized;
         // 지속성 부스트
         if (isBoost) { 
-            rigid.AddForce(vel * Time.deltaTime * boostPower, ForceMode.Force);
+            rb.AddForce(vel * Time.deltaTime * boostPower, ForceMode.Force);
         }
         // 즉발성 부스트
         if (Input.GetKeyDown(KeyCode.LeftShift) && currentBoostEnergy >= burstEnergyUsage) { 
             isBoost = true;
-            rigid.AddForce(vel * burstBoostPower, ForceMode.Acceleration);
+            rb.AddForce(vel * burstBoostPower, ForceMode.Acceleration);
             currentBoostEnergy -= burstEnergyUsage;
         }
     }
 
+    // 부스터 게이지 조절
     void BoostEnergyControl()
     {
         if (isBoost) { // 부스터 사용중
@@ -153,6 +185,15 @@ public class Player : MonoBehaviour
     int GetIntValue(TMP_InputField inputField)
     {
         if (int.TryParse(inputField.text, out int result))
+        {
+            return result; // 정수 변환 성공
+        }
+        return 0; // 변환 실패 시 기본값 0 반환
+    }
+
+    float GetFloatValue(TMP_InputField inputField)
+    {
+        if (float.TryParse(inputField.text, out float result))
         {
             return result; // 정수 변환 성공
         }

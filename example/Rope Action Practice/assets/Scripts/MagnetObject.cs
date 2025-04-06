@@ -7,10 +7,15 @@ using UnityEngine;
 
 public class MagnetObject : MonoBehaviour
 {
+    [Tooltip("끌어당기는 힘")]
     public float maxPullForce = 100f;          // 끌어당기는 힘
+    [Tooltip("감지 범위")]
     public float magnetRadius = 5f;        // 감지 범위
+    [Tooltip("달라붙는 거리")]
     public float snapDistance = 0.5f;      // 달라붙는 거리
+    [Tooltip("플레이어가 달라붙을 위치")]
     public Transform attachPoint;          // 플레이어가 달라붙을 위치
+    
 
     private void FixedUpdate()
     {
