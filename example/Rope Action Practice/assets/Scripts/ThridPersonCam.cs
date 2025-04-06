@@ -10,6 +10,10 @@ public class ThridPersonCam : MonoBehaviour
     [SerializeField] float zoomSpeed = 5f;
     [SerializeField] float zoomMinDist, zoomMaxDist;
 
+    float currentDistance; // 현재 카메라 거리
+    float smoothSpeed = 10f; // 부드럽게 이동할 속도
+
+
     LayerMask objLayer; // Player 레이어를 제외한 모든 레이어
     float zoom = 10f;
     Vector2 m_Input;
@@ -18,6 +22,7 @@ public class ThridPersonCam : MonoBehaviour
     {
         int playerLayerIndex = LayerMask.NameToLayer("Player");
         objLayer = ~(1 << playerLayerIndex);
+        currentDistance = zoom;
     }
 
     void Rotate()
@@ -49,13 +54,17 @@ public class ThridPersonCam : MonoBehaviour
 
     void CameraUpdate()
     {
+        float targetDistance = zoom;
+
         if (Physics.Raycast(point.position, -point.forward, out var hit, zoom, objLayer)) {
-            float dis = Vector3.Distance(hit.point, point.position);
-            Camera.main.transform.position = point.position - point.forward * (dis - 0.2f);
+            float dis = Vector3.Distance(hit.point, point.position) - 0.2f;
+            targetDistance = Mathf.Clamp(dis, zoomMinDist, zoom);
         }
-        else {
-            Camera.main.transform.position = point.position - point.forward * zoom;
-        }
+
+        // 거리를 부드럽게 보간
+        currentDistance = Mathf.Lerp(currentDistance, targetDistance, Time.fixedDeltaTime * smoothSpeed);
+
+        Camera.main.transform.position = point.position - point.forward * currentDistance;
         Camera.main.transform.LookAt(point.transform);
     }
 
