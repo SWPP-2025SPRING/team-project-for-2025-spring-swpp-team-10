@@ -108,6 +108,8 @@ public class Player : MonoBehaviour
 
     void Boost()
     {
+        
+
         if (!GetComponent<RopeAction>().onGrappling || Input.GetKeyUp(KeyCode.LeftShift) || currentBoostEnergy <= 0) {
             isBoost = false;
             return;
