@@ -9,40 +9,40 @@ using System.Data.Common;
 public class Player : MonoBehaviour
 {
     [Tooltip("이동 시 가해지는 힘")]
-    public float power = 1000;
+    [SerializeField] private float movePower = 1000;
     [Tooltip("최대 속도")]
-    public float maxVelocity = 20;
+    [SerializeField] private float maxVelocity = 20;
     [Tooltip("점프 시 가해지는 힘")]
-    public float jumpPower = 600;
-    public Vector3 initPos;
+    [SerializeField] private float jumpPower = 600;
+    [SerializeField] private Vector3 initPos;
 
-    public GroundCheck groundCheck;
-    public Transform cam;
+    [SerializeField] private GroundCheck groundCheck;
+    [SerializeField] private Transform cam;
 
 
     [Header("Boost")]
     [Range(0, 1)] public float currentBoostEnergy;
     [Tooltip("1초 당 쓰는 에너지")]
-    public float energyUsageRatePerSeconds;
+    [SerializeField] private float energyUsageRatePerSeconds = 0.6f;
     [Tooltip("부스트 시작 시 순간적으로 쓰는 에너지 (에너지가 해당 값 이상이어야 부스트 발동 가능)")]
-    public float burstEnergyUsage;
+    public float burstEnergyUsage = 0.2f;
     [Tooltip("부스트 상태가 아닐 때 1초 당 회복되는 에너지")]
-    public float energyRecoveryRatePerSeconds;
+    [SerializeField] private float energyRecoveryRatePerSeconds = 0.125f;
     [Tooltip("순간 가속")]
-    public float burstBoostPower = 1000;
+    [SerializeField] private float burstBoostPower = 1000;
     [Tooltip("지속적인 가속")]
-    public float sustainedBoostPower = 400;
+    [SerializeField] private float sustainedBoostPower = 400;
     public bool isBoost;
 
     [Header("Setting Input")]
-    public TMP_InputField powerI;
-    public TMP_InputField massI;
-    public TMP_InputField maxVelocityI;
-    public TMP_InputField burstBoostI;
-    public TMP_InputField sustainedBoostI;
+    [SerializeField] private TMP_InputField movePowerI;
+    [SerializeField] private TMP_InputField massI;
+    [SerializeField] private TMP_InputField maxVelocityI;
+    [SerializeField] private TMP_InputField burstBoostI;
+    [SerializeField] private TMP_InputField sustainedBoostI;
 
     [Header("Debug")]
-    public TextMeshProUGUI velocityTxt;
+    [SerializeField] private TextMeshProUGUI velocityTxt;
 
     private Rigidbody rb;
 
@@ -54,11 +54,11 @@ public class Player : MonoBehaviour
         currentBoostEnergy = 1;
         isBoost = false;
 
-        powerI.text = power.ToString();
-        massI.text = rb.mass.ToString();
-        maxVelocityI.text = maxVelocity.ToString();
-        burstBoostI.text = burstBoostPower.ToString();
-        sustainedBoostI.text = sustainedBoostPower.ToString();
+        ChangeInputFieldText(movePowerI, movePower.ToString());
+        ChangeInputFieldText(massI, rb.mass.ToString());
+        ChangeInputFieldText(maxVelocityI, maxVelocity.ToString());
+        ChangeInputFieldText(burstBoostI, burstBoostPower.ToString());
+        ChangeInputFieldText(sustainedBoostI, sustainedBoostPower.ToString());
     }
 
   
@@ -78,7 +78,8 @@ public class Player : MonoBehaviour
         Boost();
         BoostEnergyControl();
 
-        velocityTxt.text = $"Velocity : {rb.velocity.magnitude:F1}";
+        if (velocityTxt != null)
+            velocityTxt.text = $"Velocity : {rb.velocity.magnitude:F1}";
     }
 
 
@@ -100,7 +101,7 @@ public class Player : MonoBehaviour
         addSpeed = maxVelocity - currentSpeed;
         if (addSpeed <= 0)
             return;
-        accelSpeed = Mathf.Min(addSpeed, power * Time.deltaTime);
+        accelSpeed = Mathf.Min(addSpeed, movePower * Time.deltaTime);
         rb.AddForce(moveDir * accelSpeed, ForceMode.Force);
 
         if (rb.velocity.magnitude > maxVelocity) {
@@ -183,37 +184,25 @@ public class Player : MonoBehaviour
     }
 
 
-    // https://coding-shop.tistory.com/255 내용 참고
-    void OnCollisionEnter(Collision collision)
-    {
-        
-    }
-
-
     void GetInputField()
     {
-        power = GetIntValue(powerI);
-        rb.mass = GetFloatValue(massI);
-        maxVelocity = GetFloatValue(maxVelocityI);
-        burstBoostPower = GetIntValue(burstBoostI);
-        sustainedBoostPower = GetIntValue(sustainedBoostI);
+        movePower = GetFloatValue(movePower, movePowerI);
+        rb.mass = GetFloatValue(rb.mass, massI);
+        maxVelocity = GetFloatValue(maxVelocity, maxVelocityI);
+        burstBoostPower = GetFloatValue(burstBoostPower, burstBoostI);
+        sustainedBoostPower = GetFloatValue(sustainedBoostPower, sustainedBoostI);
     }
 
-    int GetIntValue(TMP_InputField inputField)
+    void ChangeInputFieldText(TMP_InputField inputField, string s)
     {
-        if (int.TryParse(inputField.text, out int result))
-        {
-            return result; // 정수 변환 성공
-        }
-        return 0; // 변환 실패 시 기본값 0 반환
+        if (inputField != null)
+            inputField.text = s;
     }
 
-    float GetFloatValue(TMP_InputField inputField)
+    float GetFloatValue(float defaultValue, TMP_InputField inputField)
     {
-        if (float.TryParse(inputField.text, out float result))
-        {
-            return result; // 정수 변환 성공
-        }
-        return 0; // 변환 실패 시 기본값 0 반환
+        if (inputField != null && float.TryParse(inputField.text, out float result))
+            return result;
+        return defaultValue;
     }
 }

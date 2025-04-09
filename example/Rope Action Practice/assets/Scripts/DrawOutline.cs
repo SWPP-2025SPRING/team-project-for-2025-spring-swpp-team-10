@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class DrawOutline : MonoBehaviour
 {
-    int num = 2;
-    public Renderer rd;
+    private int num = 2;
+    private Renderer rd;
 
     void Start()
     {

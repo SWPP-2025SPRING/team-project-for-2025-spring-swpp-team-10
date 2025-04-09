@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class MeshConverter : MonoBehaviour
 {
-    public Mesh sphereMesh, capsuleMesh;
     public static bool isSphere;
+    [SerializeField] private Mesh sphereMesh, capsuleMesh;
 
     private MeshFilter mesh;
     private Rigidbody rb;
@@ -23,14 +23,9 @@ public class MeshConverter : MonoBehaviour
         Convert();
     }
 
-    private void Update()
-    {
-        
-    }
-
     public void Convert()
     {
-        if (isSphere) {
+        if (isSphere) { // sphere -> capsule
             mesh.mesh = capsuleMesh;
             sphereCollider.enabled = false;
             capsuleCollider.enabled = true;
@@ -42,7 +37,7 @@ public class MeshConverter : MonoBehaviour
             rb.constraints |= RigidbodyConstraints.FreezeRotationY;
             rb.constraints |= RigidbodyConstraints.FreezeRotationZ;
         }
-        else {
+        else { // capsule -> sphere
             mesh.mesh = sphereMesh;
             sphereCollider.enabled = true;
             capsuleCollider.enabled = false;

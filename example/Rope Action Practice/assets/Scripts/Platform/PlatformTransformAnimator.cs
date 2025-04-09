@@ -1,20 +1,16 @@
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using UnityEngine;
 using DG.Tweening;
+using DG.Tweening.Core.Easing;
 
 public class PlatformTransformAnimator : MonoBehaviour
 {
-    [System.Serializable]
-    public struct MoveSequence {
-        public Vector3 value;
-        public float moveTime;
-        public float interval;
-        public DG.Tweening.Ease ease;
-    }
-
     public enum Type { Position, Rotation, Scale }
     [Tooltip("Trnasform에서 움직일 프로퍼티 설정")]
     public Type modifyType;
-    [Header("vec 위치로 moveTime 동안 이동한 뒤 interval 동안 체류 \n0th -> 1th -> ... -> nth -> 0th -> ...")]
+    //[Header("moveTime 동안 움직인 뒤 interval 동안 체류 \n0th -> 1th -> ... -> nth -> 0th -> ...")]
     [Tooltip("해당 시간만큼 대기하다가 이동 시작")]
     public float startDelay;
     public MoveSequence[] seqs;
@@ -57,11 +53,126 @@ public class PlatformTransformAnimator : MonoBehaviour
     {
         switch (modifyType) {
             case Type.Position:
-                return transform.DOMove(seqs[i].value, seqs[i].moveTime).SetEase(seqs[i].ease);
+                return CustomSetEase(transform.DOMove(seqs[i].value, seqs[i].moveTime), i);
             case Type.Rotation:
-                return transform.DORotate(seqs[i].value, seqs[i].moveTime, RotateMode.FastBeyond360).SetEase(seqs[i].ease);
+                return CustomSetEase(transform.DORotate(seqs[i].value, seqs[i].moveTime, RotateMode.FastBeyond360), i);
             default: // Type.Scale:
-                return transform.DOScale(seqs[i].value, seqs[i].moveTime).SetEase(seqs[i].ease);
+                return CustomSetEase(transform.DOScale(seqs[i].value, seqs[i].moveTime), i);
         }
+    }
+
+    // Tween에 customEase또는 ease를 입힘
+    Tween CustomSetEase(Tween tw, int i)
+    {
+        if (seqs[i].isCustomCurve) return tw.SetEase(seqs[i].customEase);
+        else return tw.SetEase(seqs[i].ease);
+    }
+}
+
+[System.Serializable]
+public class MoveSequence {
+    public Vector3 value;
+    public float moveTime;
+    public float interval;
+    public bool isCustomCurve;
+    public DG.Tweening.Ease ease;
+    public AnimationCurve customEase; // 직접 조절 가능한 ease
+}
+
+// ChatGPT 활용
+[CustomPropertyDrawer(typeof(MoveSequence))]
+public class MoveSequenceDrawer : PropertyDrawer
+{
+    const float padding = 2f;
+
+    public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+    {
+        int lines = 5; // 기본 라인 수
+        return EditorGUIUtility.singleLineHeight * lines + padding * (lines - 1);
+    }
+
+    public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+    {
+        EditorGUI.BeginProperty(position, label, property);
+
+        float y = position.y;
+        float lineHeight = EditorGUIUtility.singleLineHeight;
+
+        var valueProp = property.FindPropertyRelative("value");
+        var moveTimeProp = property.FindPropertyRelative("moveTime");
+        var intervalProp = property.FindPropertyRelative("interval");
+        var isCustomCurveProp = property.FindPropertyRelative("isCustomCurve");
+        var easeProp = property.FindPropertyRelative("ease");
+        var customEaseProp = property.FindPropertyRelative("customEase");
+
+        // 기본 필드들
+        EditorGUI.PropertyField(new Rect(position.x, y, position.width, lineHeight), valueProp);
+        y += lineHeight + padding;
+
+        EditorGUI.PropertyField(new Rect(position.x, y, position.width, lineHeight), moveTimeProp);
+        y += lineHeight + padding;
+
+        EditorGUI.PropertyField(new Rect(position.x, y, position.width, lineHeight), intervalProp);
+        y += lineHeight + padding;
+
+        EditorGUI.PropertyField(new Rect(position.x, y, position.width, lineHeight), isCustomCurveProp);
+        y += lineHeight + padding;
+
+        // 조건부 필드들
+        if (isCustomCurveProp.boolValue) {
+            var buttonRect = new Rect(position.x + position.width - 75f, y, 75f, lineHeight);
+
+            // 배경 강조 색상
+            EditorGUI.DrawRect(new Rect(position.x, y, position.width, lineHeight), new Color(0.2f, 0.4f, 0.2f, 0.2f));
+            EditorGUI.PropertyField(new Rect(position.x, y, position.width - 75f, lineHeight), customEaseProp);
+            if (GUI.Button(buttonRect, "Init")) {
+                AnimationCurve converted = GetLinearEaseCurve();
+                customEaseProp.animationCurveValue = converted;
+            }
+        }
+        else {
+            // 배경 강조 색상
+            EditorGUI.DrawRect(new Rect(position.x, y, position.width, lineHeight), new Color(0.2f, 0.3f, 0.6f, 0.2f));
+            EditorGUI.PropertyField(new Rect(position.x, y, position.width, lineHeight), easeProp);
+        }
+
+        EditorGUI.EndProperty();
+    }
+
+    private AnimationCurve GetLinearEaseCurve()
+    {
+        Keyframe[] keys = new Keyframe[2];
+        keys[0] = new Keyframe(0, 0);
+        keys[1] = new Keyframe(1, 1);
+        return new AnimationCurve(keys);
+    }
+}
+
+
+[CustomEditor(typeof(PlatformTransformAnimator))]
+public class PlatformTransformAnimatorEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        serializedObject.Update();
+
+        // 기본 속성 가져오기
+        SerializedProperty modifyTypeProp = serializedObject.FindProperty("modifyType");
+        SerializedProperty startDelayProp = serializedObject.FindProperty("startDelay");
+        SerializedProperty seqsProp = serializedObject.FindProperty("seqs");
+
+        // Modify Type
+        EditorGUILayout.PropertyField(modifyTypeProp);
+
+        // ✅ HelpBox로 설명 출력
+        EditorGUILayout.HelpBox("moveTime 동안 움직인 뒤 interval 동안 체류\n0th -> 1th -> ... -> nth -> 0th -> ...", MessageType.Info);
+
+        // Start Delay
+        EditorGUILayout.PropertyField(startDelayProp);
+
+        // Seqs 배열
+        EditorGUILayout.PropertyField(seqsProp, true);
+
+        serializedObject.ApplyModifiedProperties();
     }
 }
