@@ -14,21 +14,15 @@ public class PlatformTransformAnimator : MonoBehaviour
     public enum Type { Position, Rotation, Scale }
     [Tooltip("Trnasform에서 움직일 프로퍼티 설정")]
     public Type modifyType;
-    [Tooltip("vec 위치로 moveTime 동안 이동한 뒤 interval 동안 체류 \n0th -> 1th -> ... -> nth -> 0th -> ...")]
+    [Header("vec 위치로 moveTime 동안 이동한 뒤 interval 동안 체류 \n0th -> 1th -> ... -> nth -> 0th -> ...")]
+    [Tooltip("해당 시간만큼 대기하다가 이동 시작")]
+    public float startDelay;
     public MoveSequence[] seqs;
 
     void Start()
     {
         Init();
-
-        Sequence seq = DOTween.Sequence();
-        for (int i = 1; i < seqs.Length; i++) {
-            seq.Append(Do(i))
-               .AppendInterval(seqs[i].interval);
-        }
-        seq.Append(Do(0))
-           .AppendInterval(seqs[0].interval);
-        seq.SetLoops(-1, LoopType.Restart);
+        Invoke("SeqStart", startDelay);
     }
 
     void Init()
@@ -44,6 +38,18 @@ public class PlatformTransformAnimator : MonoBehaviour
                 transform.localScale = seqs[0].value;
                 break;
         }
+    }
+
+    void SeqStart()
+    {
+        Sequence seq = DOTween.Sequence();
+        for (int i = 1; i < seqs.Length; i++) {
+            seq.Append(Do(i))
+               .AppendInterval(seqs[i].interval);
+        }
+        seq.Append(Do(0))
+           .AppendInterval(seqs[0].interval);
+        seq.SetLoops(-1, LoopType.Restart);
     }
 
     // modifyType에 맞는 행동 반환

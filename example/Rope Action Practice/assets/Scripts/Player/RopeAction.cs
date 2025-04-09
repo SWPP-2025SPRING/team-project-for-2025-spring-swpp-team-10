@@ -19,6 +19,7 @@ public class RopeAction : MonoBehaviour
     LineRenderer lr;
     GameObject grapObject = null;
     Transform hitPoint;
+    MeshConverter meshConverter;
 
     SpringJoint sj;
 
@@ -39,6 +40,7 @@ public class RopeAction : MonoBehaviour
     {
         cam = Camera.main;
         lr = GetComponent<LineRenderer>();
+        meshConverter = GetComponent<MeshConverter>();
         hitPoint = transform.GetChild(0);
 
         springI.text = spring.ToString();
@@ -49,46 +51,49 @@ public class RopeAction : MonoBehaviour
 
     void Update()
     {
+        GetInputField();
+
         if (Input.GetMouseButtonDown(0)) {
             RopeShoot();
         }
-        if (Input.GetMouseButtonUp(0)) {
+        if (Input.GetMouseButtonUp(0) && onGrappling) {
             EndShoot();
         }
 
-
         if (Input.GetMouseButton(1)) {
-            ShortenRope(40);
+            ShortenRope(40); // 빠르게 오브젝트에 접근
         }
         if (Input.GetKey(KeyCode.Q)) {
-            ShortenRope(GetIntValue(retractorSpeedI));
+            ShortenRope(retractorSpeed);
         }
         if (Input.GetKey(KeyCode.E)) {
             ExtendRope();
         }
         
-
         DrawOutline();
         DrawRope();
+        ModeConvert();
     }
 
     void RopeShoot()
     {
         if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, grapDistance, GrapplingObj)) {
-            if (hit.collider.gameObject == gameObject)
+            if (hit.collider.gameObject == gameObject) // 자기 자신이면 return
                 return;
             grapObject = hit.collider.gameObject;
 
+            // hitPoint를 훅을 건 오브젝트의 자식으로 설정
             hitPoint.SetParent(grapObject.transform);
             hitPoint.position = hit.point;
 
             onGrappling = true;
-            // LineRenderer
+
+            // LineRenderer 세팅
             lr.positionCount = 2;
             lr.SetPosition(0, transform.position);
             lr.SetPosition(1, hit.point);
 
-            // SpringJoint
+            // SpringJoint 세팅
             float dis = Vector3.Distance(transform.position, hit.point);
 
             sj = player.gameObject.AddComponent<SpringJoint>();
@@ -97,9 +102,12 @@ public class RopeAction : MonoBehaviour
 
             sj.maxDistance = dis;
             sj.minDistance = dis;
-            sj.damper = GetIntValue(damperI);
-            sj.spring = GetIntValue(springI);
-            sj.massScale = GetIntValue(massI);
+            sj.damper = damper;
+            sj.spring = spring;
+            sj.massScale = mass;
+
+            // 플레이어의 형태를 sphere로 변환
+            meshConverter.ConvertToSphere();
         }
     }
 
@@ -117,6 +125,10 @@ public class RopeAction : MonoBehaviour
     {
         if (!onGrappling || sj.maxDistance <= 1) 
             return;
+        
+        if (sj.maxDistance < 20) {
+            value *= Mathf.Lerp(0.2f, 1, (sj.maxDistance - 1) / 19f); // maxDist가 1일 때는 0.4f, 20일 때는 1f
+        }
 
         sj.maxDistance = sj.minDistance = sj.maxDistance - value * Time.deltaTime;
 
@@ -153,6 +165,26 @@ public class RopeAction : MonoBehaviour
         if (grapObject != null) {
             grapObject.GetComponent<DrawOutline>().Draw();
         }
+    }
+
+
+    void ModeConvert()
+    {
+        if (Input.GetKeyDown(KeyCode.Tab)) {
+            meshConverter.Convert();
+            // Capsule -> Sphere로 변환하면서 로프액션 상태라면 로프를 풀기
+            if (!MeshConverter.isSphere && onGrappling)
+                EndShoot();
+        }
+    }
+
+
+    void GetInputField()
+    {
+        spring = GetIntValue(springI);
+        damper = GetIntValue(damperI);
+        mass = GetIntValue(massI);
+        retractorSpeed = GetIntValue(retractorSpeedI);
     }
 
 
