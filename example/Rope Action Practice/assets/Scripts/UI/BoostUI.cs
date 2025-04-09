@@ -4,22 +4,20 @@ using TMPro;
 
 public class BoostUI : MonoBehaviour
 {
-    public Player player;
-    public Color boostTextColor;
+    [SerializeField] private Player player;
+    [SerializeField] private Color boostTextColor;
 
     private Image[] image;  
     private TextMeshProUGUI txt;
     private float startEnergy;
     float boostTime;
 
-    // Start is called before the first frame update
     void Start()
     {
         image = GetComponentsInChildren<Image>();
         txt = GetComponentInChildren<TextMeshProUGUI>();
     }
 
-    // Update is called once per frame
     void Update()
     {
         ImageControl();
@@ -39,7 +37,7 @@ public class BoostUI : MonoBehaviour
             }
             SetImageAlpha(energy / startEnergy);
             
-            if (boostTime < 0.2f) {
+            if (boostTime < 0.2f) { // 부스터 시작하고 0.2초 동안 이미지의 크기 조절
                 SetImageSize(Mathf.Lerp(120, 100, boostTime / 0.2f));
                 boostTime += Time.deltaTime;
             }
@@ -51,7 +49,7 @@ public class BoostUI : MonoBehaviour
             boostTime = 0;
             SetImageSize(100);
 
-            if (energy >= player.burstEnergyUsage) {
+            if (energy >= player.burstEnergyUsage) { // 부스터를 쓸 수 있는 조건
                 SetImageAlpha(Mathf.Min(1, color.a + 3 * Time.deltaTime));
             }
             else {

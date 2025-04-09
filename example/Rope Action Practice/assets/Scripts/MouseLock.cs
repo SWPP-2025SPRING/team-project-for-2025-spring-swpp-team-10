@@ -2,8 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// ChatGPT 도움을 받음.
-// 입력 : 유니티에서 마우스 커서 모양을 끄고 마우스의 위치를 화면 정중앙으로 고정시킬 수 있어? 
+// ChatGPT 도움을 받음
 
 public class MouseLock : MonoBehaviour
 {
@@ -18,7 +17,7 @@ public class MouseLock : MonoBehaviour
 
     void Update()
     {
-        // ALT 키로 잠금 해제
+        // ALT 키로 마우스 잠금 해제
         if (Input.GetKey(KeyCode.LeftAlt))
         {
             Cursor.visible = true;

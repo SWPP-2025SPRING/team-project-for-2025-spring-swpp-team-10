@@ -5,23 +5,22 @@ using UnityEngine;
 // https://jeonhw.tistory.com/17, https://gps-homepage.tistory.com/16 참고
 public class ThridPersonCam : MonoBehaviour
 {
-    public Transform point;
-    [SerializeField] float rotSpeed;
-    [SerializeField] float zoomSpeed = 5f;
-    [SerializeField] float zoomMinDist, zoomMaxDist;
+    [SerializeField] private Transform point;
+    [SerializeField] private float rotSpeed = 15f;
+    [SerializeField] private float zoomSpeed = 5f;
+    [SerializeField] private float zoomMinDist = 1.5f, zoomMaxDist = 30f;
 
-    float currentDistance; // 현재 카메라 거리
-    float smoothSpeed = 10f; // 부드럽게 이동할 속도
+    private float currentDistance; // 현재 카메라 거리
+    private float smoothSpeed = 10f; // 부드럽게 이동할 속도
 
-
-    LayerMask objLayer; // Player 레이어를 제외한 모든 레이어
-    float zoom = 10f;
-    Vector2 m_Input;
+    private LayerMask objLayer; // Player 레이어를 제외한 모든 레이어
+    private float zoom = 10f;
+    private Vector2 m_Input;
 
     void Start()
     {
         int playerLayerIndex = LayerMask.NameToLayer("Player");
-        objLayer = ~(1 << playerLayerIndex);
+        objLayer = ~(1 << playerLayerIndex); // Player 레이어를 제외한 모든 레이어
         currentDistance = zoom;
     }
 
@@ -57,7 +56,7 @@ public class ThridPersonCam : MonoBehaviour
         float targetDistance = zoom;
 
         if (Physics.Raycast(point.position, -point.forward, out var hit, zoom, objLayer)) {
-            float dis = Vector3.Distance(hit.point, point.position) - 0.2f;
+            float dis = Vector3.Distance(hit.point, point.position) - 0.5f;
             targetDistance = Mathf.Clamp(dis, zoomMinDist, zoom);
         }
 

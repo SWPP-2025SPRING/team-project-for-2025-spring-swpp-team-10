@@ -8,32 +8,32 @@ using Unity.VisualScripting;
 // https://www.youtube.com/watch?v=-E_pRXqNYSk 참고
 public class RopeAction : MonoBehaviour
 {
-    public Transform player;
+    [SerializeField] private Transform player;
     [Tooltip("훅을 걸 수 있는 오브젝트의 레이어")]
-    
     public LayerMask GrapplingObj;
     public bool onGrappling = false;
 
-    Camera cam;
-    RaycastHit hit;
-    LineRenderer lr;
-    GameObject grapObject = null;
-    Transform hitPoint;
-    MeshConverter meshConverter;
+    private Camera cam;
+    private RaycastHit hit;
+    private LineRenderer lr;
+    private GameObject grapObject = null;
+    // 해당 스크립트를 가지는 오브젝트의 0번째 자식으로 빈 오브젝트를 할당하기. 와이어를 걸었을 때 후크를 부착하는 포인트가 됨
+    private Transform hitPoint; 
+    private MeshConverter meshConverter;
 
-    SpringJoint sj;
+    private SpringJoint sj;
 
     [Header("Spring")]
-    public float spring;
-    public float damper, mass;
+    [SerializeField] private float spring = 100;
+    [SerializeField] private float damper = 1, mass = 10;
     [Tooltip("와이어를 걸 수 있는 최대 거리")]
     public float grapDistance = 50f;
     [Tooltip("줄 감기/풀기 속도")]
-    public float retractorSpeed;
+    [SerializeField] private float retractorSpeed = 12;
 
     [Header("Setting Input")]
-    public TMP_InputField springI;
-    public TMP_InputField damperI, massI, retractorSpeedI;
+    [SerializeField] private TMP_InputField springI;
+    [SerializeField] private TMP_InputField damperI, massI, retractorSpeedI;
 
 
     void Start()
@@ -43,10 +43,10 @@ public class RopeAction : MonoBehaviour
         meshConverter = GetComponent<MeshConverter>();
         hitPoint = transform.GetChild(0);
 
-        springI.text = spring.ToString();
-        damperI.text = damper.ToString();
-        massI.text = mass.ToString();
-        retractorSpeedI.text = retractorSpeed.ToString();
+        ChangeInputFieldText(springI, spring.ToString());
+        ChangeInputFieldText(damperI, damper.ToString());
+        ChangeInputFieldText(massI, mass.ToString());
+        ChangeInputFieldText(retractorSpeedI, retractorSpeed.ToString());
     }
 
     void Update()
@@ -82,7 +82,7 @@ public class RopeAction : MonoBehaviour
                 return;
             grapObject = hit.collider.gameObject;
 
-            // hitPoint를 훅을 건 오브젝트의 자식으로 설정
+            // hitPoint 오브젝트트를 훅을 건 오브젝트의 자식으로 설정
             hitPoint.SetParent(grapObject.transform);
             hitPoint.position = hit.point;
 
@@ -140,7 +140,7 @@ public class RopeAction : MonoBehaviour
         if (!onGrappling || sj.maxDistance > grapDistance) 
             return;
 
-        sj.maxDistance = sj.minDistance = sj.maxDistance + GetIntValue(retractorSpeedI) * Time.deltaTime;
+        sj.maxDistance = sj.minDistance = sj.maxDistance + retractorSpeed * Time.deltaTime; 
     }
     
 
@@ -181,19 +181,23 @@ public class RopeAction : MonoBehaviour
 
     void GetInputField()
     {
-        spring = GetIntValue(springI);
-        damper = GetIntValue(damperI);
-        mass = GetIntValue(massI);
-        retractorSpeed = GetIntValue(retractorSpeedI);
+        spring = GetFloatValue(spring, springI);
+        damper = GetFloatValue(damper, damperI);
+        mass = GetFloatValue(mass, massI);
+        retractorSpeed = GetFloatValue(retractorSpeed, retractorSpeedI);
+        damper = 1.3f;
     }
 
-
-    int GetIntValue(TMP_InputField inputField)
+    void ChangeInputFieldText(TMP_InputField inputField, string s)
     {
-        if (int.TryParse(inputField.text, out int result))
-        {
-            return result; // 정수 변환 성공
-        }
-        return 0; // 변환 실패 시 기본값 0 반환
+        if (inputField != null)
+            inputField.text = s;
+    }
+
+    float GetFloatValue(float defaultValue, TMP_InputField inputField)
+    {
+        if (inputField != null && float.TryParse(inputField.text, out float result))
+            return result;
+        return defaultValue;
     }
 }

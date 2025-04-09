@@ -1,7 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.IO.IsolatedStorage;
 using UnityEngine;
+
+// 화면 좌상단의 Setting Button 스크립트
 
 public class SettingButton : MonoBehaviour
 {
@@ -9,7 +8,6 @@ public class SettingButton : MonoBehaviour
     public GameObject highlight;
     bool isOpen = false;
 
-    // Start is called before the first frame update
     void Start()
     {
         foreach (GameObject obj in objs)
