@@ -26,7 +26,7 @@ public class ThridPersonCam : MonoBehaviour
 
     void Rotate()
     {
-        if (!Input.GetKey(KeyCode.LeftAlt))
+        if (!Input.GetKey(KeyCode.LeftAlt) && Time.timeScale > 0)
         {
             m_Input.x = Input.GetAxis("Mouse X");
             m_Input.y = -Input.GetAxis("Mouse Y");
