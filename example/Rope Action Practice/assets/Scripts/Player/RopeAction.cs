@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Unity.VisualScripting;
+using UnityEditor.Callbacks;
+using UnityEditor.Experimental.GraphView;
 
 // https://www.youtube.com/watch?v=-E_pRXqNYSk 참고
 public class RopeAction : MonoBehaviour
@@ -11,17 +13,20 @@ public class RopeAction : MonoBehaviour
     [SerializeField] private Transform player;
     [Tooltip("훅을 걸 수 있는 오브젝트의 레이어")]
     public LayerMask GrapplingObj;
-    public bool onGrappling = false;
+    public static bool onGrappling = false;
+    private bool isPullableTarget;
 
     private Camera cam;
     private RaycastHit hit;
     private LineRenderer lr;
     private GameObject grapObject = null;
     // 해당 스크립트를 가지는 오브젝트의 0번째 자식으로 빈 오브젝트를 할당하기. 와이어를 걸었을 때 후크를 부착하는 포인트가 됨
-    private Transform hitPoint; 
+    private Transform hitPoint;
     private MeshConverter meshConverter;
-
     private SpringJoint sj;
+    private ConfigurableJoint cj;
+    private PlayerSkill skill;
+
 
     [Header("Spring")]
     [SerializeField] private float spring = 100;
@@ -36,11 +41,12 @@ public class RopeAction : MonoBehaviour
     [SerializeField] private TMP_InputField damperI, massI, retractorSpeedI;
 
 
-    void Start()
+    private void Start()
     {
         cam = Camera.main;
         lr = GetComponent<LineRenderer>();
         meshConverter = GetComponent<MeshConverter>();
+        skill = GetComponent<PlayerSkill>();
         hitPoint = transform.GetChild(0);
 
         ChangeInputFieldText(springI, spring.ToString());
@@ -49,7 +55,7 @@ public class RopeAction : MonoBehaviour
         ChangeInputFieldText(retractorSpeedI, retractorSpeed.ToString());
     }
 
-    void Update()
+    private void Update()
     {
         GetInputField();
 
@@ -60,13 +66,13 @@ public class RopeAction : MonoBehaviour
             EndShoot();
         }
 
-        if (Input.GetMouseButton(1)) {
+        if (Input.GetMouseButton(1) && skill.HasRetractor()) {
             ShortenRope(40); // 빠르게 오브젝트에 접근
         }
-        if (Input.GetKey(KeyCode.Q)) {
+        if (Input.GetKey(KeyCode.Q) && skill.HasRetractor()) {
             ShortenRope(retractorSpeed);
         }
-        if (Input.GetKey(KeyCode.E)) {
+        if (Input.GetKey(KeyCode.E) && skill.HasRetractor()) {
             ExtendRope();
         }
         
@@ -75,14 +81,20 @@ public class RopeAction : MonoBehaviour
         ModeConvert();
     }
 
-    void RopeShoot()
+    private void RopeShoot()
     {
         if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, grapDistance, GrapplingObj)) {
             if (hit.collider.gameObject == gameObject) // 자기 자신이면 return
                 return;
             grapObject = hit.collider.gameObject;
 
-            // hitPoint 오브젝트트를 훅을 건 오브젝트의 자식으로 설정
+            isPullableTarget = grapObject.CompareTag("PullableTarget");
+
+            if (isPullableTarget && !skill.HasPull()) {
+                grapObject = null;
+                return;
+            }
+
             hitPoint.SetParent(grapObject.transform);
             hitPoint.position = hit.point;
 
@@ -93,35 +105,87 @@ public class RopeAction : MonoBehaviour
             lr.SetPosition(0, transform.position);
             lr.SetPosition(1, hit.point);
 
-            // SpringJoint 세팅
-            float dis = Vector3.Distance(transform.position, hit.point);
+            
 
-            sj = player.gameObject.AddComponent<SpringJoint>();
-            sj.autoConfigureConnectedAnchor = false;
-            sj.connectedAnchor = hit.point;
-
-            sj.maxDistance = dis;
-            sj.minDistance = dis;
-            sj.damper = damper;
-            sj.spring = spring;
-            sj.massScale = mass;
-
-            // 플레이어의 형태를 sphere로 변환
-            meshConverter.ConvertToSphere();
+            if (isPullableTarget) {
+                PullGrap();
+            }
+            else {
+                Grap();
+            }
         }
     }
 
-    void EndShoot()
+
+    private void PullGrap()
+    {
+        // Configurable Joint 세팅
+        Rigidbody targetRb = hit.collider.attachedRigidbody;
+
+        if (targetRb == null) return;
+
+        cj = gameObject.AddComponent<ConfigurableJoint>();
+        cj.connectedBody = targetRb;
+
+        // 이걸 켜면 anchor와 connectedAnchor는 월드 좌표로 동작
+        cj.configuredInWorldSpace = true;
+
+        // 내 쪽은 현재 위치 (줄 시작점)
+        cj.anchor = transform.position;
+
+        // 상대방 쪽은 hit.point (줄 걸리는 지점)
+        cj.connectedAnchor = hit.point;
+
+        // 이동 제한: 줄처럼 작동하게
+        cj.xMotion = ConfigurableJointMotion.Limited;
+        cj.yMotion = ConfigurableJointMotion.Limited;
+        cj.zMotion = ConfigurableJointMotion.Limited;
+
+        SoftJointLimitSpring spring = new SoftJointLimitSpring { spring = 10000, damper = 100 };
+        cj.linearLimitSpring = spring;
+
+        SoftJointLimit limit = new SoftJointLimit { limit = Vector3.Distance(transform.position, hit.point) * 0.1f };
+        cj.linearLimit = limit;
+        Debug.Log(Vector3.Distance(transform.position, hit.point));
+
+        // 플레이어의 형태를 Hanster로 변환
+        meshConverter.ConvertToHamster();
+    }
+
+
+    private void Grap()
+    {
+        // SpringJoint 세팅
+        float dis = Vector3.Distance(transform.position, hit.point);
+        Debug.Log(dis);
+
+        sj = player.gameObject.AddComponent<SpringJoint>();
+        sj.autoConfigureConnectedAnchor = false;
+        sj.connectedAnchor = hit.point;
+
+        sj.maxDistance = dis;
+        sj.minDistance = dis;
+        sj.damper = damper;
+        sj.spring = spring;
+        sj.massScale = mass;
+
+        // 플레이어의 형태를 sphere로 변환
+        meshConverter.ConvertToSphere();
+    }
+
+
+    private void EndShoot()
     {
         grapObject = null;
         hitPoint.SetParent(this.transform);
         onGrappling = false;
         lr.positionCount = 0;
-        Destroy(sj);
+        if (isPullableTarget) Destroy(cj);
+        else Destroy(sj);
     }
 
 
-    void ShortenRope(float value)
+    private void ShortenRope(float value)
     {
         if (!onGrappling || sj.maxDistance <= 1) 
             return;
@@ -135,7 +199,7 @@ public class RopeAction : MonoBehaviour
         if (sj.maxDistance < 1)
             sj.maxDistance = sj.minDistance = 1;
     }
-    void ExtendRope()
+    private void ExtendRope()
     {
         if (!onGrappling || sj.maxDistance > grapDistance) 
             return;
@@ -144,20 +208,21 @@ public class RopeAction : MonoBehaviour
     }
     
 
-    void DrawRope()
+    private void DrawRope()
     {
         if (onGrappling) {
             lr.SetPosition(0, transform.position);
             lr.SetPosition(1, hitPoint.position);
-            sj.connectedAnchor = hitPoint.position;
+            if (!isPullableTarget) sj.connectedAnchor = hitPoint.position;
         }
     }
 
-    void DrawOutline()
+    private void DrawOutline()
     {
         // 마우스가 가리키는 오브젝트의 외곽선 표시
         if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, grapDistance, GrapplingObj)) {
-            if (hit.collider.gameObject != gameObject)
+            // PullableTarget이며 pull스킬이 없는 경우를 제외
+            if (hit.collider.gameObject != gameObject && (!hit.collider.CompareTag("PullableTarget") || skill.HasPull()))
                 hit.collider.gameObject.GetComponent<DrawOutline>().Draw();
         }
 
@@ -168,18 +233,23 @@ public class RopeAction : MonoBehaviour
     }
 
 
-    void ModeConvert()
+    private void ModeConvert()
     {
         if (Input.GetKeyDown(KeyCode.Tab)) {
             meshConverter.Convert();
-            // Capsule -> Sphere로 변환하면서 로프액션 상태라면 로프를 풀기
-            if (!MeshConverter.isSphere && onGrappling)
+            // Hamster -> Sphere로 변환하면서 로프액션 상태라면 로프를 풀기
+            if (!MeshConverter.isSphere && onGrappling && !isPullableTarget)
+                EndShoot();
+            // Spherer -> Hanster로 변환하면서 로프액션 상태라면 로프를 풀기
+            if (MeshConverter.isSphere && onGrappling && isPullableTarget)
                 EndShoot();
         }
     }
 
 
-    void GetInputField()
+
+
+    private void GetInputField()
     {
         spring = GetFloatValue(spring, springI);
         damper = GetFloatValue(damper, damperI);
@@ -188,13 +258,13 @@ public class RopeAction : MonoBehaviour
         damper = 1.3f;
     }
 
-    void ChangeInputFieldText(TMP_InputField inputField, string s)
+    private void ChangeInputFieldText(TMP_InputField inputField, string s)
     {
         if (inputField != null)
             inputField.text = s;
     }
 
-    float GetFloatValue(float defaultValue, TMP_InputField inputField)
+    private float GetFloatValue(float defaultValue, TMP_InputField inputField)
     {
         if (inputField != null && float.TryParse(inputField.text, out float result))
             return result;

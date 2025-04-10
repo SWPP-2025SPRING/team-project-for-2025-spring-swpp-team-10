@@ -18,7 +18,7 @@ public class MouseLock : MonoBehaviour
     void Update()
     {
         // ALT 키로 마우스 잠금 해제
-        if (Input.GetKey(KeyCode.LeftAlt))
+        if (Input.GetKey(KeyCode.LeftAlt) || Time.timeScale == 0)
         {
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;

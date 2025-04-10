@@ -3,21 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using UnityEngine.PlayerLoop;
-using System.Data.Common;
 
+[RequireComponent(typeof(HamsterMovement))]
+[RequireComponent(typeof(SphereMovement))]
+[RequireComponent(typeof(MeshConverter))]
 public class Player : MonoBehaviour
 {
-    [Tooltip("이동 시 가해지는 힘")]
-    [SerializeField] private float movePower = 1000;
-    [Tooltip("최대 속도")]
-    [SerializeField] private float maxVelocity = 20;
     [Tooltip("점프 시 가해지는 힘")]
-    [SerializeField] private float jumpPower = 600;
+    public float jumpPower = 600;
     [SerializeField] private Vector3 initPos;
 
     [SerializeField] private GroundCheck groundCheck;
     [SerializeField] private Transform cam;
+    private HamsterMovement hamsterMove;
+    private SphereMovement sphereMove;
+    private PlayerSkill skill;
 
 
     [Header("Boost")]
@@ -34,10 +34,12 @@ public class Player : MonoBehaviour
     [SerializeField] private float sustainedBoostPower = 400;
     public bool isBoost;
 
+    [Header("Gliding")]
+    private bool isGliding;
+    [SerializeField] private GameObject glidingMesh;
+
     [Header("Setting Input")]
-    [SerializeField] private TMP_InputField movePowerI;
     [SerializeField] private TMP_InputField massI;
-    [SerializeField] private TMP_InputField maxVelocityI;
     [SerializeField] private TMP_InputField burstBoostI;
     [SerializeField] private TMP_InputField sustainedBoostI;
 
@@ -45,18 +47,21 @@ public class Player : MonoBehaviour
     [SerializeField] private TextMeshProUGUI velocityTxt;
 
     private Rigidbody rb;
+    private int jumpCount;
 
     
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        hamsterMove = GetComponent<HamsterMovement>();
+        sphereMove = GetComponent<SphereMovement>();
+        skill = GetComponent<PlayerSkill>();
 
         currentBoostEnergy = 1;
         isBoost = false;
-
-        ChangeInputFieldText(movePowerI, movePower.ToString());
+        isGliding = false;
+        
         ChangeInputFieldText(massI, rb.mass.ToString());
-        ChangeInputFieldText(maxVelocityI, maxVelocity.ToString());
         ChangeInputFieldText(burstBoostI, burstBoostPower.ToString());
         ChangeInputFieldText(sustainedBoostI, sustainedBoostPower.ToString());
     }
@@ -66,11 +71,11 @@ public class Player : MonoBehaviour
     {
         GetInputField();
 
-        if (MeshConverter.isSphere) AddForce();
-        else AddVelocity();
+        if (MeshConverter.isSphere) sphereMove.Move();
+        else hamsterMove.Move();
 
-        if (Input.GetKeyDown(KeyCode.Space))
-            Jump();
+        Jump();
+        GlidingInput();
 
         if (Input.GetKeyDown(KeyCode.R) || transform.position.y < -100)
             Init();
@@ -79,7 +84,12 @@ public class Player : MonoBehaviour
         BoostEnergyControl();
 
         if (velocityTxt != null)
-            velocityTxt.text = $"Velocity : {rb.velocity.magnitude:F1}";
+            velocityTxt.text = $"Velocity : {rb.velocity.magnitude:F1}\n({rb.velocity.x:F1},{rb.velocity.y:F1},{rb.velocity.z:F1})";
+    }
+
+    void FixedUpdate()
+    {
+        Gliding();
     }
 
 
@@ -90,66 +100,65 @@ public class Player : MonoBehaviour
     }
 
 
-    // AddForce : https://www.youtube.com/watch?v=8dFDRWCQ3Hs 참고
-    void AddForce()
-    {
-        Vector3 moveDir = GetInputMoveDir();
-
-        float addSpeed, accelSpeed, currentSpeed;
-
-        currentSpeed = Vector2.Dot(new Vector2(rb.velocity.x, rb.velocity.z), new Vector2(moveDir.x, moveDir.z));
-        addSpeed = maxVelocity - currentSpeed;
-        if (addSpeed <= 0)
-            return;
-        accelSpeed = Mathf.Min(addSpeed, movePower * Time.deltaTime);
-        rb.AddForce(moveDir * accelSpeed, ForceMode.Force);
-
-        if (rb.velocity.magnitude > maxVelocity) {
-            //Debug.Log(rb.velocity.magnitude + " vel : " + new Vector2(rb.velocity.x, rb.velocity.z) + ", forceDir : " + new Vector2(moveVec.x, moveVec.z));
-        }
-    }
-
-    void AddVelocity()
-    {
-        Vector3 moveDir = GetInputMoveDir();
-
-        float addSpeed, accelSpeed, currentSpeed;
-
-        float _maxVelocity = Input.GetKey(KeyCode.LeftShift) ? maxVelocity * 1.2f : maxVelocity / 1.2f;
-
-        currentSpeed = Vector2.Dot(new Vector2(rb.velocity.x, rb.velocity.z), new Vector2(moveDir.x, moveDir.z));
-        addSpeed = _maxVelocity - currentSpeed;
-        if (addSpeed <= 0)
-            return;
-        accelSpeed = Mathf.Min(addSpeed, _maxVelocity * 2f * Time.deltaTime);
-        Debug.Log(addSpeed + "," + _maxVelocity * Time.deltaTime);
-        rb.velocity += moveDir * accelSpeed;
-    }
-
-    Vector3 GetInputMoveDir()
-    {
-        float hor = Input.GetAxisRaw("Horizontal");
-        float ver = Input.GetAxisRaw("Vertical");
-
-        Vector3 forwardVec = new Vector3(cam.forward.x, 0, cam.forward.z).normalized;
-        Vector3 rightVec = new Vector3(cam.right.x, 0, cam.right.z).normalized;
-        Vector3 moveVec = (forwardVec * ver + rightVec * hor).normalized;
-
-        return moveVec;
-    }
-
-
+    private float jumpStartTime = -10;
+    private bool jumped = false; // 현재 프레임에 점프가 발동됐는지
     void Jump()
     {
+        jumped = false;
         if (groundCheck.isGround) {
-            rb.AddForce(Vector3.up * jumpPower, ForceMode.Acceleration);
+            if (Time.time - jumpStartTime > 0.2f)
+                jumpCount = 0;
+            if (Input.GetKeyDown(KeyCode.Space)) {
+                Jump_sub();
+                jumpStartTime = Time.time;
+            }
         }
+        else if (Input.GetKeyDown(KeyCode.Space)) { // 공중
+            if (skill.HasDoubleJump() && jumpCount < 2) {
+                Jump_sub();
+                jumpCount = 2;
+            }
+        }
+    }
+
+    void Jump_sub()
+    {
+        rb.AddForce(Vector3.up * jumpPower, ForceMode.Acceleration);
+        jumpCount++;
+        jumped = true;
+    }
+
+
+    // 점프 다 하고 스페이스바 다시 누르면 활공
+    void GlidingInput()
+    {
+        if (!groundCheck.isGround && Input.GetKeyDown(KeyCode.Space)) {
+            if (!jumped && skill.HasGliding())
+                isGliding = !isGliding;
+        }
+        if (groundCheck.isGround) {
+            isGliding = false;
+        }
+    }
+
+    void Gliding()
+    {
+        if (isGliding) {
+            Rigidbody rb = GetComponent<Rigidbody>();
+            Vector3 antiGravity = -0.8f * rb.mass * Physics.gravity;
+            if (rb.velocity.y > 0)
+                antiGravity = 0.8f * rb.mass * Physics.gravity;
+            rb.AddForce(antiGravity);
+            if (rb.velocity.y < -7)
+                rb.velocity = new Vector3(rb.velocity.x, -7, rb.velocity.z);
+        }
+        glidingMesh.SetActive(isGliding);
     }
     
 
     void Boost()
     {
-        if (!GetComponent<RopeAction>().onGrappling || Input.GetKeyUp(KeyCode.LeftShift) || currentBoostEnergy <= 0) {
+        if (!RopeAction.onGrappling || Input.GetKeyUp(KeyCode.LeftShift) || currentBoostEnergy <= 0 || !MeshConverter.isSphere || !skill.HasBoost()) {
             isBoost = false;
             return;
         }
@@ -186,9 +195,7 @@ public class Player : MonoBehaviour
 
     void GetInputField()
     {
-        movePower = GetFloatValue(movePower, movePowerI);
         rb.mass = GetFloatValue(rb.mass, massI);
-        maxVelocity = GetFloatValue(maxVelocity, maxVelocityI);
         burstBoostPower = GetFloatValue(burstBoostPower, burstBoostI);
         sustainedBoostPower = GetFloatValue(sustainedBoostPower, sustainedBoostI);
     }

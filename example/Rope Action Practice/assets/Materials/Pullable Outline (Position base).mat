@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Outline2 (Position base)
+  m_Name: Pullable Outline (Position base)
   m_Shader: {fileID: -6465566751694194690, guid: b9779a61d473c03449a1403fbd88f028, type: 3}
   m_ValidKeywords: []
   m_InvalidKeywords: []
@@ -38,7 +38,7 @@ Material:
     - _QueueOffset: 0
     - _scale: 0.3
     m_Colors:
-    - _Color: {r: 0.39799997, g: 0.74899995, b: 1, a: 1}
+    - _Color: {r: 0.8867924, g: 0.6185356, b: 0.27273044, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &1257313673386346767
 MonoBehaviour:

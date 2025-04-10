@@ -10,14 +10,14 @@ public class MeshConverter : MonoBehaviour
     private MeshFilter mesh;
     private Rigidbody rb;
     private SphereCollider sphereCollider;
-    private CapsuleCollider capsuleCollider;
+    private CapsuleCollider hamsterCollider;
 
     private void Start()
     {
         mesh = GetComponent<MeshFilter>();
         rb = GetComponent<Rigidbody>();
         sphereCollider = GetComponent<SphereCollider>();
-        capsuleCollider = GetComponent<CapsuleCollider>();
+        hamsterCollider = GetComponent<CapsuleCollider>();
 
         isSphere = false;
         Convert();
@@ -28,9 +28,10 @@ public class MeshConverter : MonoBehaviour
         if (isSphere) { // sphere -> capsule
             mesh.mesh = capsuleMesh;
             sphereCollider.enabled = false;
-            capsuleCollider.enabled = true;
+            hamsterCollider.enabled = true;
 
             rb.MovePosition(transform.position + Vector3.up * 0.6f);
+            rb.drag = 1f;
             transform.rotation = Quaternion.identity;
 
             rb.constraints |= RigidbodyConstraints.FreezeRotationX;
@@ -40,7 +41,9 @@ public class MeshConverter : MonoBehaviour
         else { // capsule -> sphere
             mesh.mesh = sphereMesh;
             sphereCollider.enabled = true;
-            capsuleCollider.enabled = false;
+            hamsterCollider.enabled = false;
+
+            rb.drag = 0.2f;
 
             rb.constraints &= ~RigidbodyConstraints.FreezeRotationX;
             rb.constraints &= ~RigidbodyConstraints.FreezeRotationY;
@@ -55,7 +58,7 @@ public class MeshConverter : MonoBehaviour
         if (!isSphere) Convert();
     }
 
-    public void ConvertToCapsule()
+    public void ConvertToHamster()
     {
         if (isSphere) Convert();
     }
