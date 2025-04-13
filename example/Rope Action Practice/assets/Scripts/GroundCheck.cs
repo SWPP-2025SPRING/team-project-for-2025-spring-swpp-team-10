@@ -5,9 +5,8 @@ using UnityEngine;
 public class GroundCheck : MonoBehaviour
 {
     public Transform player;
-    public Vector3 offset;
     public bool isGround = false;
-    private int groundCount = 0; // 현재 닿아있는 플랫폼의 개수
+    public int groundCount = 0; // 현재 닿아있는 플랫폼의 개수
 
     void Update()
     {
@@ -19,7 +18,7 @@ public class GroundCheck : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Platform")) {
+        if (other.CompareTag("Platform") || other.CompareTag("PullableTarget")) {
             groundCount++;
             isGround = true;
         }
@@ -27,7 +26,7 @@ public class GroundCheck : MonoBehaviour
 
     void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Platform")) {
+        if (other.CompareTag("Platform") || other.CompareTag("PullableTarget")) {
             if (--groundCount <= 0) {
                 isGround = false;
             }
