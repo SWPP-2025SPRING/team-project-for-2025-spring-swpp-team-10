@@ -15,7 +15,7 @@ public class HamsterMovement : MonoBehaviour
         Vector3 moveDir = GetInputMoveDir();
 
         float _maxVelocity = Input.GetKey(KeyCode.LeftShift) ? runVelocity : walkVelocity;
-        if (RopeAction.onGrappling) _maxVelocity *= 0.5f;
+        if (HamsterRope.onGrappling) _maxVelocity *= HamsterRope.speedFactor;
 
         Vector3 rbVec = new Vector3(rb.velocity.x, 0, rb.velocity.z);
         if (moveDir == Vector3.zero) {
@@ -34,6 +34,8 @@ public class HamsterMovement : MonoBehaviour
         accelSpeed = Mathf.Min(addSpeed, _maxVelocity * 10f * Time.deltaTime);
 
         rb.velocity += moveDir * accelSpeed;
+
+        if (HamsterRope.onGrappling) HamsterRope.grapRb.velocity = rb.velocity;
     }
 
 

@@ -4,7 +4,7 @@ using TMPro;
 
 public class BoostUI : MonoBehaviour
 {
-    [SerializeField] private Player player;
+    [SerializeField] private PlayerMovement player;
     [SerializeField] private Color boostTextColor;
 
     private Image[] image;  

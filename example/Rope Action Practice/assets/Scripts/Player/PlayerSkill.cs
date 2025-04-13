@@ -7,7 +7,7 @@ public class PlayerSkill : MonoBehaviour
 {
     private int skill;
 
-    private Player player;
+    private PlayerMovement player;
     private HamsterMovement hamster;
     private SphereMovement sphere;
 
@@ -20,7 +20,7 @@ public class PlayerSkill : MonoBehaviour
 
     private void Start()
     {
-        player = GetComponent<Player>();
+        player = GetComponent<PlayerMovement>();
         hamster = GetComponent<HamsterMovement>();
         sphere = GetComponent<SphereMovement>();
         skill = 0;

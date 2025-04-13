@@ -7,7 +7,7 @@ using TMPro;
 [RequireComponent(typeof(HamsterMovement))]
 [RequireComponent(typeof(SphereMovement))]
 [RequireComponent(typeof(MeshConverter))]
-public class Player : MonoBehaviour
+public class PlayerMovement : MonoBehaviour
 {
     [Tooltip("점프 시 가해지는 힘")]
     public float jumpPower = 600;
@@ -35,7 +35,7 @@ public class Player : MonoBehaviour
     public bool isBoost;
 
     [Header("Gliding")]
-    private bool isGliding;
+    public static bool isGliding;
     [SerializeField] private GameObject glidingMesh;
 
     [Header("Setting Input")]
@@ -47,7 +47,7 @@ public class Player : MonoBehaviour
     [SerializeField] private TextMeshProUGUI velocityTxt;
 
     private Rigidbody rb;
-    private int jumpCount;
+    public int jumpCount;
 
     
     void Start()
@@ -104,6 +104,8 @@ public class Player : MonoBehaviour
     private bool jumped = false; // 현재 프레임에 점프가 발동됐는지
     void Jump()
     {
+        // if (RopeAction.onGrappling) return;
+
         jumped = false;
         if (groundCheck.isGround) {
             if (Time.time - jumpStartTime > 0.2f)
@@ -132,7 +134,7 @@ public class Player : MonoBehaviour
     // 점프 다 하고 스페이스바 다시 누르면 활공
     void GlidingInput()
     {
-        if (!groundCheck.isGround && Input.GetKeyDown(KeyCode.Space)) {
+        if (!groundCheck.isGround && Input.GetKeyDown(KeyCode.Space) && !RopeAction.onGrappling) {
             if (!jumped && skill.HasGliding())
                 isGliding = !isGliding;
         }
