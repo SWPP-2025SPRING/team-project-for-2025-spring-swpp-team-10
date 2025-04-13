@@ -56,7 +56,6 @@ public class RopeAction : MonoBehaviour
     {
         GetInputField();
 
-        CheckForSwingPoints();
         // UI 위에 마우스가 있지 않을 때만 마우스 클릭 입력 받음
         if (!EventSystem.current.IsPointerOverGameObject()) {
             if (Input.GetMouseButtonDown(0)) {
@@ -81,6 +80,16 @@ public class RopeAction : MonoBehaviour
         DrawRope();
         ModeConvert();
     }
+
+    private void LateUpdate()
+    {
+        CheckForSwingPoints();
+    }
+
+    // private void FixedUpdate()
+    // {
+    //     CheckForSwingPoints();
+    // }
 
 
     // https://www.youtube.com/watch?v=HPjuTK91MA8

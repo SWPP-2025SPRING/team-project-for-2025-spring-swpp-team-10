@@ -149,7 +149,7 @@ public class PlayerMovement : MonoBehaviour
             Rigidbody rb = GetComponent<Rigidbody>();
             Vector3 antiGravity = -0.8f * rb.mass * Physics.gravity;
             if (rb.velocity.y > 0)
-                antiGravity = 0.8f * rb.mass * Physics.gravity;
+                antiGravity = 0.4f * rb.mass * Physics.gravity;
             rb.AddForce(antiGravity);
             if (rb.velocity.y < -7)
                 rb.velocity = new Vector3(rb.velocity.x, -7, rb.velocity.z);

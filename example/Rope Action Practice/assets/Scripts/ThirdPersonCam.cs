@@ -71,7 +71,7 @@ public class ThirdPersonCam : MonoBehaviour
     public void LateUpdate()
     {
         Rotate();
-        Zoom(); 
+        Zoom();
     }
 
     void FixedUpdate()

@@ -79,6 +79,7 @@ public class MoveSequence {
     public AnimationCurve customEase; // 직접 조절 가능한 ease
 }
 
+#if UNITY_EDITOR
 // ChatGPT 활용
 [CustomPropertyDrawer(typeof(MoveSequence))]
 public class MoveSequenceDrawer : PropertyDrawer
@@ -176,3 +177,4 @@ public class PlatformTransformAnimatorEditor : Editor
         serializedObject.ApplyModifiedProperties();
     }
 }
+#endif
