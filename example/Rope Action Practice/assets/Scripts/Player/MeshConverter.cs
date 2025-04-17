@@ -38,7 +38,7 @@ public class MeshConverter : MonoBehaviour
         }
         else { // hamster -> sphere
             animator.SetTrigger("ChangeToSphere");
-            Invoke(nameof(ChangeObject), 1.2f);
+            Invoke(nameof(ChangeObject), 0.6f);
 
             rb.MovePosition(transform.position + Vector3.up * 0.5f);
             rb.drag = 0.2f;
@@ -53,8 +53,8 @@ public class MeshConverter : MonoBehaviour
 
     private void ChangeObject()
     {
-        hamster.SetActive(false);
         ball.SetActive(true);
+        hamster.SetActive(false);
     }
 
     public void ConvertToSphere()
