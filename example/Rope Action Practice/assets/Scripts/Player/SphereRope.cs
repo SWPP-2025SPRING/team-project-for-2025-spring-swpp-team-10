@@ -73,5 +73,6 @@ public class SphereRope : MonoBehaviour, IRope
     public void RopeUpdate()
     {
         sj.connectedAnchor = hitPoint.position;
+        transform.rotation = Quaternion.LookRotation(hitPoint.position - transform.position);
     }
 }

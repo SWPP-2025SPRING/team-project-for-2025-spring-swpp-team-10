@@ -13,8 +13,10 @@ public class PlayerMovement : MonoBehaviour
     public float jumpPower = 600;
     [SerializeField] private Vector3 initPos;
 
+    [Header("References")]
+    [SerializeField] private Animator animator;
     [SerializeField] private GroundCheck groundCheck;
-    [SerializeField] private Transform cam;
+
     private HamsterMovement hamsterMove;
     private SphereMovement sphereMove;
     private PlayerSkill skill;
@@ -71,9 +73,6 @@ public class PlayerMovement : MonoBehaviour
     {
         GetInputField();
 
-        if (MeshConverter.isSphere) sphereMove.Move();
-        else hamsterMove.Move();
-
         Jump();
         GlidingInput();
 
@@ -83,12 +82,21 @@ public class PlayerMovement : MonoBehaviour
         Boost();
         BoostEnergyControl();
 
+        if (MeshConverter.isSphere) sphereMove.UpdateFunc();
+        else hamsterMove.UpdateFunc();
+
         if (velocityTxt != null)
             velocityTxt.text = $"Velocity : {rb.velocity.magnitude:F1}\n({rb.velocity.x:F1},{rb.velocity.y:F1},{rb.velocity.z:F1})";
     }
 
     void FixedUpdate()
     {
+        if (MeshConverter.isSphere) sphereMove.Move();
+        else {
+            bool isMoving = hamsterMove.Move();
+            animator.SetBool("IsWalking", isMoving);
+        }
+
         Gliding();
     }
 
@@ -108,8 +116,10 @@ public class PlayerMovement : MonoBehaviour
 
         jumped = false;
         if (groundCheck.isGround) {
-            if (Time.time - jumpStartTime > 0.2f)
+            if (Time.time - jumpStartTime > 0.2f) {// 점프한 뒤 착지했으나, 통통 튀겨서 위로 올라가 ground 판정이 안 된 경우를 대비
                 jumpCount = 0;
+                //animator.SetBool("IsJumping", false);
+            }
             if (Input.GetKeyDown(KeyCode.Space)) {
                 Jump_sub();
                 jumpStartTime = Time.time;
@@ -128,6 +138,9 @@ public class PlayerMovement : MonoBehaviour
         rb.AddForce(Vector3.up * jumpPower, ForceMode.Acceleration);
         jumpCount++;
         jumped = true;
+
+        //animator.SetBool("IsJumping", true);
+        animator.SetTrigger("Jump");
     }
 
 
