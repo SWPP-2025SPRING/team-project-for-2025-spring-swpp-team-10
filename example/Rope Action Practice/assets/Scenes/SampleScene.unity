@@ -12815,7 +12815,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6cba997c09cd1741b69e21549be6891, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spring: 8888888
+  spring: 10000
   damper: 1
   mass: 10
   retractorSpeed: 12
