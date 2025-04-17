@@ -16,23 +16,36 @@ public class SphereMovement : MonoBehaviour
     [SerializeField] public TMP_InputField maxVelocityI;
 
 
+    private Vector3 moveDir = Vector3.zero;
+    private Vector3 lastPosition;
+
+
     private void Start()
     {
         ChangeInputFieldText(movePowerI, movePower.ToString());
         ChangeInputFieldText(maxVelocityI, maxVelocity.ToString());
+
+        lastPosition = transform.position;
     }
 
     private void Update()
     {
         GetInputField();   
+        
+    }
+
+    public void UpdateFunc()
+    {
+        moveDir = GetInputMoveDir();
+        RotateBasedOnMovement();
     }
 
 
+    
     // AddForce : https://www.youtube.com/watch?v=8dFDRWCQ3Hs 참고
     public void Move()
     {
         Rigidbody rb = GetComponent<Rigidbody>();
-        Vector3 moveDir = GetInputMoveDir();
 
         float addSpeed, accelSpeed, currentSpeed;
 
@@ -40,8 +53,29 @@ public class SphereMovement : MonoBehaviour
         addSpeed = maxVelocity - currentSpeed;
         if (addSpeed <= 0)
             return;
-        accelSpeed = Mathf.Min(addSpeed, movePower * Time.deltaTime);
+        accelSpeed = Mathf.Min(addSpeed, movePower * Time.fixedDeltaTime);
         rb.AddForce(moveDir * accelSpeed, ForceMode.Force);
+    }
+
+    
+    void RotateBasedOnMovement()
+    {
+        if (RopeAction.onGrappling) return;
+
+        Vector3 currentPosition = transform.position;
+        Vector3 delta = currentPosition - lastPosition;
+
+        if (delta.magnitude > 0.001f)
+        {
+            // 회전 축: 이동 방향 벡터와 Vector3.up의 외적
+            Vector3 rotationAxis = Vector3.Cross(delta.normalized, Vector3.down);
+            float rotationSpeed = delta.magnitude * 360f; // 속도에 비례한 회전량
+            float rotateFactor = 0.1f;
+
+            transform.Rotate(rotationAxis, rotationSpeed * rotateFactor, Space.World);
+        }
+
+        lastPosition = currentPosition;
     }
 
 

@@ -2,35 +2,33 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class MeshConverter : MonoBehaviour
 {
-    public static bool isSphere;
-    [SerializeField] private Mesh sphereMesh, capsuleMesh;
+    [Header("References")]
+    [SerializeField] private Animator animator;
+    [SerializeField] private GameObject hamster;
+    [SerializeField] private GameObject ball;
 
-    private MeshFilter mesh;
     private Rigidbody rb;
-    private SphereCollider sphereCollider;
-    private CapsuleCollider hamsterCollider;
+    public static bool isSphere;
 
     private void Start()
     {
-        mesh = GetComponent<MeshFilter>();
         rb = GetComponent<Rigidbody>();
-        sphereCollider = GetComponent<SphereCollider>();
-        hamsterCollider = GetComponent<CapsuleCollider>();
 
-        isSphere = false;
+        isSphere = true;
         Convert();
     }
 
     public void Convert()
     {
-        if (isSphere) { // sphere -> capsule
-            mesh.mesh = capsuleMesh;
-            sphereCollider.enabled = false;
-            hamsterCollider.enabled = true;
-
-            rb.MovePosition(transform.position + Vector3.up * 0.6f);
+        if (isSphere) { // sphere -> hamster
+            hamster.SetActive(true);
+            ball.SetActive(false);
+            animator.SetTrigger("ChangeToHamster");
+            
+            rb.MovePosition(transform.position + Vector3.up * 0.5f);
             rb.drag = 1f;
             transform.rotation = Quaternion.identity;
 
@@ -38,11 +36,11 @@ public class MeshConverter : MonoBehaviour
             rb.constraints |= RigidbodyConstraints.FreezeRotationY;
             rb.constraints |= RigidbodyConstraints.FreezeRotationZ;
         }
-        else { // capsule -> sphere
-            mesh.mesh = sphereMesh;
-            sphereCollider.enabled = true;
-            hamsterCollider.enabled = false;
+        else { // hamster -> sphere
+            animator.SetTrigger("ChangeToSphere");
+            Invoke(nameof(ChangeObject), 1.2f);
 
+            rb.MovePosition(transform.position + Vector3.up * 0.5f);
             rb.drag = 0.2f;
 
             rb.constraints &= ~RigidbodyConstraints.FreezeRotationX;
@@ -51,6 +49,12 @@ public class MeshConverter : MonoBehaviour
         }
 
         isSphere = !isSphere;
+    }
+
+    private void ChangeObject()
+    {
+        hamster.SetActive(false);
+        ball.SetActive(true);
     }
 
     public void ConvertToSphere()
