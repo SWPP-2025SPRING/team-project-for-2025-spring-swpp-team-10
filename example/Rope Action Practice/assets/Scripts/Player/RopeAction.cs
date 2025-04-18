@@ -172,7 +172,7 @@ public class RopeAction : MonoBehaviour
         currentWire.RopeShoot(predictionHit);
     }
 
-    private void EndShoot()
+    public void EndShoot()
     {
         grapObject = null;
         hitPoint.SetParent(this.transform);

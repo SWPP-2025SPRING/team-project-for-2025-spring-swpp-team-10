@@ -57,7 +57,8 @@ public class HamsterMovement : MonoBehaviour
             rb.velocity = new Vector3(moveDir.x * _maxVelocity, rb.velocity.y, moveDir.z * _maxVelocity);
 
         // 오브젝트 잡고 움직이는 중
-        if (HamsterRope.onGrappling) HamsterRope.grapRb.velocity = rb.velocity;
+        if (HamsterRope.onGrappling)
+            HamsterRope.grapRb.velocity = new Vector3(rb.velocity.x, HamsterRope.grapRb.velocity.y, rb.velocity.z);
 
         return rb.velocity.sqrMagnitude > 0.1f;
     }

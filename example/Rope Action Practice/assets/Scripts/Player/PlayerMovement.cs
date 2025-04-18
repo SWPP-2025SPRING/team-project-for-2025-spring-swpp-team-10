@@ -19,7 +19,6 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private Animator animator;
-    [SerializeField] private GroundCheck groundCheck;
 
     private HamsterMovement hamsterMove;
     private SphereMovement sphereMove;
@@ -118,7 +117,7 @@ public class PlayerMovement : MonoBehaviour
         if (RopeAction.onGrappling) return; // 와이어 액션 중에는 점프 x
 
         jumped = false;
-        if (groundCheck.isGround) {
+        if (GroundCheck.isGround) {
             if (Time.time - jumpStartTime > 0.2f) {// 점프한 뒤 착지했으나, 통통 튀겨서 위로 올라가 ground 판정이 안 된 경우를 대비
                 jumpCount = 0;
                 //animator.SetBool("IsJumping", false);
@@ -150,11 +149,11 @@ public class PlayerMovement : MonoBehaviour
     // 점프 다 하고 스페이스바 다시 누르면 활공
     void GlidingInput()
     {
-        if (!groundCheck.isGround && Input.GetKeyDown(KeyCode.Space) && !RopeAction.onGrappling) {
+        if (!GroundCheck.isGround && Input.GetKeyDown(KeyCode.Space) && !RopeAction.onGrappling) {
             if (!jumped && skill.HasGliding())
                 isGliding = !isGliding;
         }
-        if (groundCheck.isGround) {
+        if (GroundCheck.isGround) {
             isGliding = false;
         }
     }

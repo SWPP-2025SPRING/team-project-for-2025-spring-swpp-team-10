@@ -1,13 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.NetworkInformation;
 using UnityEngine;
 
 // 햄스터 상태에서의 로프액션
 public class HamsterRope : MonoBehaviour, IRope
 {
     public static bool onGrappling { get; private set; }
-    public static float speedFactor { get; private set; }
-    public static Rigidbody grapRb { get; private set; }
+    public static float speedFactor { get; private set; } // HamsterMovement에서 쓰임. 물체와 같이 이동할 때 줄어드는 속도 비율
+    public static Rigidbody grapRb { get; private set; } // HamsterMovement에서 쓰임. 물체의 RigidBody
     
 
     [SerializeField] private float spring = 1000;
@@ -90,18 +91,25 @@ public class HamsterRope : MonoBehaviour, IRope
         if (sj.maxDistance > grapDistance) 
             return;
 
-        Vector3 forceDir = (grapTransform.position - transform.position).normalized;
+        Vector3 forceDir = grapTransform.position - transform.position;
+        forceDir = new Vector3(forceDir.x, 0, forceDir.z).normalized;
         if (Vector3.Dot(forceDir, grapRb.velocity) > retractorMaxSpeed)
             return;
         grapRb.AddForce(forceDir * retractorForce * Time.deltaTime);
         
-        //sj.maxDistance = sj.minDistance = Vector3.Distance(transform.position, hitPoint.position);// * 0.8f;
         sj.maxDistance = Vector3.Distance(transform.position, hitPoint.position) * 1.1f;
         sj.minDistance = Vector3.Distance(transform.position, hitPoint.position) * 0.9f;
     }
 
     public void RopeUpdate()
     {
+        if (sj == null) return;
+
         sj.connectedAnchor = hitPoint.position;
+
+        // 잡은 물체가 떨어지는데 플레이어는 물체에 끌려가지 않고 지면에 가로막혀서 이동을 안 함
+        if ((hitPoint.position - transform.position).magnitude > sj.maxDistance + 5 && GroundCheck.isGround && grapRb.velocity.y < 0) {
+            GetComponent<RopeAction>().EndShoot();
+        }
     }
 }

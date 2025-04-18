@@ -32,7 +32,6 @@ public class SphereMovement : MonoBehaviour
     // private void Update()
     // {
     //     GetInputField();   
-        
     // }
 
     public void UpdateFunc()
