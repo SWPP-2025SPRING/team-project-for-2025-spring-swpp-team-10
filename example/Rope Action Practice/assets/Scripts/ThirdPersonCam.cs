@@ -57,7 +57,7 @@ public class ThirdPersonCam : MonoBehaviour
         float targetDistance = zoom;
 
         if (Physics.Raycast(point.position, -point.forward, out var hit, zoom, objLayer)) {
-            float dis = Vector3.Distance(hit.point, point.position) - 1f;
+            float dis = Vector3.Distance(hit.point, point.position) - 2f;
             targetDistance = Mathf.Clamp(dis, zoomMinDist, zoom);
         }
 

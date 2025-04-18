@@ -87,6 +87,11 @@ public class PlayerMovement : MonoBehaviour
 
         if (velocityTxt != null)
             velocityTxt.text = $"Velocity : {rb.velocity.magnitude:F1}\n({rb.velocity.x:F1},{rb.velocity.y:F1},{rb.velocity.z:F1})";
+
+
+        if (Input.GetKeyDown(KeyCode.G)) {
+            rb.AddForce(Vector3.up * 600f, ForceMode.Acceleration);
+        }
     }
 
     void FixedUpdate()
@@ -112,7 +117,7 @@ public class PlayerMovement : MonoBehaviour
     private bool jumped = false; // 현재 프레임에 점프가 발동됐는지
     void Jump()
     {
-        // if (RopeAction.onGrappling) return;
+        if (RopeAction.onGrappling) return;
 
         jumped = false;
         if (groundCheck.isGround) {

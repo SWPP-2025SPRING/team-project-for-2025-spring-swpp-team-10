@@ -21,7 +21,7 @@ public class MeshConverter : MonoBehaviour
         hamRds = hamster.GetComponentsInChildren<Renderer>();
         rb = GetComponent<Rigidbody>();
 
-        //isSphere = true;
+        isSphere = false;
         //Convert();
     }
 

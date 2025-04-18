@@ -10,16 +10,19 @@ public class SphereRope : MonoBehaviour, IRope
     [SerializeField] private float retractorSpeed = 12;
 
     private float grapDistance;
+    private float minY;
 
     private SpringJoint sj;
     private RaycastHit hit;
     private Transform hitPoint;
+    private Rigidbody rb;
 
 
     private void Start()
     {
         grapDistance = GetComponent<RopeAction>().grapDistance;
         hitPoint = GetComponent<RopeAction>().hitPoint;
+        rb = GetComponent<Rigidbody>();
     }
 
 
@@ -39,12 +42,26 @@ public class SphereRope : MonoBehaviour, IRope
         sj.damper = damper;
         sj.spring = spring;
         sj.massScale = mass;
+
+        minY = transform.position.y;
     }
 
     public void EndShoot()
     {
-        if (sj != null)
+        if (sj != null) {
             Destroy(sj);
+            
+            Rigidbody rb = GetComponent<Rigidbody>();
+            Vector3 dir = ((hit.point - transform.position).normalized + rb.velocity.normalized).normalized;
+            rb.AddForce(dir * 10f * rb.velocity.magnitude, ForceMode.Acceleration);
+
+            float yDist = transform.position.y - minY;//(hit.point - transform.position).y;
+            if (yDist > 1) {
+                float value = Mathf.Clamp01(yDist / 5f);
+                float value2 = (20 - Mathf.Clamp(rb.velocity.y, 5, 20)) / 15f; // y속도가 20 이상이면 힘 안 줌
+                rb.AddForce(Vector3.up * value * value2 * 600f, ForceMode.Acceleration);
+            }
+        }
     }
 
     public void ShortenRope(float value)
@@ -74,5 +91,7 @@ public class SphereRope : MonoBehaviour, IRope
     {
         sj.connectedAnchor = hitPoint.position;
         transform.rotation = Quaternion.LookRotation(hitPoint.position - transform.position);
+
+        minY = Mathf.Min(minY, transform.position.y);
     }
 }
