@@ -10,21 +10,25 @@ public class MeshConverter : MonoBehaviour
     [SerializeField] private GameObject hamster;
     [SerializeField] private GameObject ball;
 
+    private CapsuleCollider hamCol;
+    private Renderer[] hamRds;
     private Rigidbody rb;
     public static bool isSphere;
 
     private void Start()
     {
+        hamCol = hamster.GetComponent<CapsuleCollider>();
+        hamRds = hamster.GetComponentsInChildren<Renderer>();
         rb = GetComponent<Rigidbody>();
 
-        isSphere = true;
-        Convert();
+        //isSphere = true;
+        //Convert();
     }
 
     public void Convert()
     {
         if (isSphere) { // sphere -> hamster
-            hamster.SetActive(true);
+            HamsterSetActive(true);
             ball.SetActive(false);
             animator.SetTrigger("ChangeToHamster");
             
@@ -38,7 +42,7 @@ public class MeshConverter : MonoBehaviour
         }
         else { // hamster -> sphere
             animator.SetTrigger("ChangeToSphere");
-            Invoke(nameof(ChangeObject), 0.6f);
+            Invoke(nameof(ChangeObject), 0.4f);
 
             rb.MovePosition(transform.position + Vector3.up * 0.5f);
             rb.drag = 0.2f;
@@ -53,8 +57,16 @@ public class MeshConverter : MonoBehaviour
 
     private void ChangeObject()
     {
+        rb.MovePosition(transform.position + Vector3.up * 0.5f);
         ball.SetActive(true);
-        hamster.SetActive(false);
+        HamsterSetActive(false);
+    }
+
+    private void HamsterSetActive(bool value)
+    {
+        hamCol.enabled = value;
+        foreach (Renderer rd in hamRds)
+            rd.enabled = value;
     }
 
     public void ConvertToSphere()

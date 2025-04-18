@@ -234,12 +234,14 @@ public class RopeAction : MonoBehaviour
     }
 
 
+    private float tabCoolTime = -10;
     private void ModeConvert()
     {
-        if (Input.GetKeyDown(KeyCode.Tab)) {
+        if (Input.GetKeyDown(KeyCode.Tab) && Time.time - tabCoolTime > 0.5f) { // 연타 방지
             meshConverter.Convert();
             if (onGrappling)
                 EndShoot();
+            tabCoolTime = Time.time;
         }
     }
 
