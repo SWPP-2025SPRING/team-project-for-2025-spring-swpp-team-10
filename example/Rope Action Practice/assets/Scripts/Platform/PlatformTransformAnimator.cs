@@ -5,6 +5,10 @@ using UnityEngine;
 using DG.Tweening;
 using DG.Tweening.Core.Easing;
 
+// 현재 방식은 Position, Rotation, Scale 중 하나를 전제하고 Vector3값을 조정하여 애니메이션을 출력하는 방식이다.
+// ith 애니메이션 각각에서 Position, Rotation, Scale 중 하나를 선택하고,
+// Vector3값 자체가 아닌 x, y, z 중 1~3가지만 골라서 그 값만 바꾸게 하는 함수가 필요해 보인다.
+// position에서 (x,z)와 y가 다른 방식으로 움직이거나, 이동->회전->이동이 가능하게끔 하는 것이 필요해 보인다.
 public class PlatformTransformAnimator : MonoBehaviour
 {
     public enum Type { Position, Rotation, Scale }

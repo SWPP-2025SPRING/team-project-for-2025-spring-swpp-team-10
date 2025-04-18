@@ -1,7 +1,6 @@
 using UnityEngine;
 
 // 화면 좌상단의 Setting Button 스크립트
-
 public class SettingButton : MonoBehaviour
 {
     public GameObject[] objs;

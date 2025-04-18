@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// 플레이어의 아래에 위치해서 지면을 감지하는 역할
 public class GroundCheck : MonoBehaviour
 {
     public Transform player;

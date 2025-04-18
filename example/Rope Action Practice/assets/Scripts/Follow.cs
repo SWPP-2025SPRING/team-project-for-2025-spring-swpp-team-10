@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // follow.position + offset의 위치로 자연스럽게 이동하는 컴포넌트
-
 public class Follow : MonoBehaviour
 {
     [SerializeField] private Transform follow;

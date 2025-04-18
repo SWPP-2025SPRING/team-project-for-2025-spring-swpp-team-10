@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 // 플레이어가 밟으면 아래로 내려가고, 떠나면 다시 올라오는 플랫폼
+
+// 와이어를 걸었을 때 동작하도록 수정해야 함
+// 다른 플랫폼 이동 스크립트랑 호환 안 될 수 있음. PlatformTransformAnimator도 고쳐야 호환이 잘 될 듯
 public class PressureSensitivePlatform : MonoBehaviour
 {
     [Header("Values")]
@@ -33,6 +35,10 @@ public class PressureSensitivePlatform : MonoBehaviour
         onPlayer = false;
 
         rb = GetComponent<Rigidbody>();
+        rb.mass = 10000;
+        rb.constraints |= RigidbodyConstraints.FreezeRotationX;
+        rb.constraints |= RigidbodyConstraints.FreezeRotationY;
+        rb.constraints |= RigidbodyConstraints.FreezeRotationZ;
 
         // 플랫폼이 움직이는 범위 표시
         if (dotted != null) {
@@ -83,7 +89,7 @@ public class PressureSensitivePlatform : MonoBehaviour
 
         // Transform값 설정
         cylinder.position = new Vector3(transform.position.x, initY - maxDownLength * 0.5f, transform.position.z);
-        cylinder.localScale = new Vector3(0.2f, 1 + maxDownLength * 0.5f, 0.2f);
+        cylinder.localScale = new Vector3(0.2f, maxDownLength * 0.5f, 0.2f);
         cylinder.rotation = Quaternion.identity;
 
         // Dotted 매테리얼의 점선 간격 조정

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
+// 체크포인트 기능을 총괄
 public class CheckPointManager : MonoBehaviour
 {
     public enum CheckPointItem { Speed, Jump, Boost, Retractor, Gliding, Pull, DoubleJump }
@@ -30,6 +31,7 @@ public class CheckPointManager : MonoBehaviour
         PutUI();
     }
 
+    // 다음 체크포인트의 위치를 UI 화면상에 출력
     private void PutUI()
     {
         Vector3 screenPos = Camera.main.WorldToScreenPoint(target.position);
@@ -89,7 +91,7 @@ public class CheckPointManager : MonoBehaviour
         // markerUI.gameObject.SetActive(!isInsideScreen);
     }
 
-    // 체크포인트를 먹었을 때 호출
+    // 체크포인트를 먹었을 때 CheckPoint.cs쪽에서 호출
     public void CheckPoint()
     {
         order++;

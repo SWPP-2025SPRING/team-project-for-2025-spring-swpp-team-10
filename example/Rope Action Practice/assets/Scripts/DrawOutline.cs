@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// 외곽선을 그리는 스크립트 (DrawOutlineEditor.cs 존재)
 public class DrawOutline : MonoBehaviour
 {
     private int num = 2;

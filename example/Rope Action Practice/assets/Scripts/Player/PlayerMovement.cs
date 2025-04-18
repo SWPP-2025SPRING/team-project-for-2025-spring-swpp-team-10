@@ -7,8 +7,12 @@ using TMPro;
 [RequireComponent(typeof(HamsterMovement))]
 [RequireComponent(typeof(SphereMovement))]
 [RequireComponent(typeof(MeshConverter))]
+// 점프, 글라이딩, 부스트
 public class PlayerMovement : MonoBehaviour
 {
+    public static bool isGliding;
+
+
     [Tooltip("점프 시 가해지는 힘")]
     public float jumpPower = 600;
     [SerializeField] private Vector3 initPos;
@@ -37,13 +41,12 @@ public class PlayerMovement : MonoBehaviour
     public bool isBoost;
 
     [Header("Gliding")]
-    public static bool isGliding;
     [SerializeField] private GameObject glidingMesh;
 
-    [Header("Setting Input")]
-    [SerializeField] private TMP_InputField massI;
-    [SerializeField] private TMP_InputField burstBoostI;
-    [SerializeField] private TMP_InputField sustainedBoostI;
+    // [Header("Setting Input")]
+    // [SerializeField] private TMP_InputField massI;
+    // [SerializeField] private TMP_InputField burstBoostI;
+    // [SerializeField] private TMP_InputField sustainedBoostI;
 
     [Header("Debug")]
     [SerializeField] private TextMeshProUGUI velocityTxt;
@@ -63,15 +66,15 @@ public class PlayerMovement : MonoBehaviour
         isBoost = false;
         isGliding = false;
         
-        ChangeInputFieldText(massI, rb.mass.ToString());
-        ChangeInputFieldText(burstBoostI, burstBoostPower.ToString());
-        ChangeInputFieldText(sustainedBoostI, sustainedBoostPower.ToString());
+        // ChangeInputFieldText(massI, rb.mass.ToString());
+        // ChangeInputFieldText(burstBoostI, burstBoostPower.ToString());
+        // ChangeInputFieldText(sustainedBoostI, sustainedBoostPower.ToString());
     }
 
   
     void Update()
     {
-        GetInputField();
+        // GetInputField();
 
         Jump();
         GlidingInput();
@@ -112,7 +115,7 @@ public class PlayerMovement : MonoBehaviour
     private bool jumped = false; // 현재 프레임에 점프가 발동됐는지
     void Jump()
     {
-        // if (RopeAction.onGrappling) return;
+        if (RopeAction.onGrappling) return; // 와이어 액션 중에는 점프 x
 
         jumped = false;
         if (groundCheck.isGround) {
@@ -208,23 +211,23 @@ public class PlayerMovement : MonoBehaviour
     }
 
 
-    void GetInputField()
-    {
-        rb.mass = GetFloatValue(rb.mass, massI);
-        burstBoostPower = GetFloatValue(burstBoostPower, burstBoostI);
-        sustainedBoostPower = GetFloatValue(sustainedBoostPower, sustainedBoostI);
-    }
+    // void GetInputField()
+    // {
+    //     rb.mass = GetFloatValue(rb.mass, massI);
+    //     burstBoostPower = GetFloatValue(burstBoostPower, burstBoostI);
+    //     sustainedBoostPower = GetFloatValue(sustainedBoostPower, sustainedBoostI);
+    // }
 
-    void ChangeInputFieldText(TMP_InputField inputField, string s)
-    {
-        if (inputField != null)
-            inputField.text = s;
-    }
+    // void ChangeInputFieldText(TMP_InputField inputField, string s)
+    // {
+    //     if (inputField != null)
+    //         inputField.text = s;
+    // }
 
-    float GetFloatValue(float defaultValue, TMP_InputField inputField)
-    {
-        if (inputField != null && float.TryParse(inputField.text, out float result))
-            return result;
-        return defaultValue;
-    }
+    // float GetFloatValue(float defaultValue, TMP_InputField inputField)
+    // {
+    //     if (inputField != null && float.TryParse(inputField.text, out float result))
+    //         return result;
+    //     return defaultValue;
+    // }
 }

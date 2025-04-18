@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 
+// 각 체크포인트에 부착하는 스크립트
 public class CheckPoint : MonoBehaviour
 {
     [SerializeField] private CheckPointManager manager;
+    [Tooltip("체크포인트가 닿으면 활성화할 UI")]
     [SerializeField] private GameObject openUI;
 
     private Transform octahedron;

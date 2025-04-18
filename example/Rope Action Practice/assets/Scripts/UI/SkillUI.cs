@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+// 스킬 선택창 UI 스크립트
+// 스킬 획득 스크립트는 PlayerSkill 스크립트
 public class SkillUI : MonoBehaviour
 {
     [SerializeField] private PlayerSkill skill;

@@ -41,12 +41,12 @@ public class PlayerSkill : MonoBehaviour
     public void GetSpeed()
     {
         skill |= 1 << 0;
-        hamster.walkVelocity *= 1.2f;
+        hamster.walkVelocity *= 1.2f; // 걷는 속도는 너무 빨라져도 안 좋을 것 같음
         hamster.runVelocity *= 1.5f;
         sphere.movePower *= 1.5f;
         sphere.maxVelocity *= 1.5f;
-        ChangeInputFieldText(sphere.movePowerI, sphere.movePower.ToString());
-        ChangeInputFieldText(sphere.maxVelocityI, sphere.maxVelocity.ToString());
+        // ChangeInputFieldText(sphere.movePowerI, sphere.movePower.ToString());
+        // ChangeInputFieldText(sphere.maxVelocityI, sphere.maxVelocity.ToString());
         CloseUI();
         txt.text += "\nSpeed";
     }

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// 두 지점을 왔다갔다하는 스크립트 (PingPongEditor.cs 존재)
 public class PingPong : MonoBehaviour
 {
     public enum Type { Transform, Vector3 }

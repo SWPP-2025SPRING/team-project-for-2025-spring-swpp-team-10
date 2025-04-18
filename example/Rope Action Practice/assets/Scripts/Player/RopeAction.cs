@@ -4,24 +4,24 @@ using TMPro;
 using DG.Tweening;
 
 // https://www.youtube.com/watch?v=-E_pRXqNYSk 참고
-// 와이어를 관리하는 스크립트
+
+[RequireComponent(typeof(HamsterRope))]
+[RequireComponent(typeof(SphereRope))]
+// 와이어를 관리하는 스크립트 (RopeActionEditor.cs 존재)
 public class RopeAction : MonoBehaviour
 {
+    public static bool onGrappling = false;
+
     [SerializeField] private Transform player;
     [Tooltip("훅을 걸 수 있는 오브젝트의 레이어")]
     public LayerMask WhatIsGrappable;
-    public static bool onGrappling = false;
-    //private bool isPullableTarget;
 
     private Camera cam;
-    //private RaycastHit hit;
     private LineRenderer lr;
     private GameObject grapObject = null;
     // 해당 스크립트를 가지는 오브젝트의 0번째 자식으로 빈 오브젝트를 할당하기. 와이어를 걸었을 때 후크를 부착하는 포인트가 됨
     public Transform hitPoint { get; private set; }
     private MeshConverter meshConverter;
-    // private SpringJoint sj;
-    // private ConfigurableJoint cj;
     private PlayerSkill skill;
 
     private IRope currentWire;
@@ -38,8 +38,8 @@ public class RopeAction : MonoBehaviour
     public float predictionSphereCastRadius;
     public Transform predictionPoint;
 
-    [Header("Setting Input")]
-    [SerializeField] private TMP_InputField retractorSpeedI;
+    // [Header("Setting Input")]
+    // [SerializeField] private TMP_InputField retractorSpeedI;
 
     private void Awake()
     {
@@ -49,12 +49,12 @@ public class RopeAction : MonoBehaviour
         skill = GetComponent<PlayerSkill>();
         hitPoint = transform.GetChild(0);
 
-        ChangeInputFieldText(retractorSpeedI, retractorSpeed.ToString());
+        // ChangeInputFieldText(retractorSpeedI, retractorSpeed.ToString());
     }
 
     private void Update()
     {
-        GetInputField();
+        // GetInputField();
 
         // UI 위에 마우스가 있지 않을 때만 마우스 클릭 입력 받음
         if (!EventSystem.current.IsPointerOverGameObject()) {
@@ -85,11 +85,6 @@ public class RopeAction : MonoBehaviour
     {
         CheckForSwingPoints();
     }
-
-    // private void FixedUpdate()
-    // {
-    //     CheckForSwingPoints();
-    // }
 
 
     // https://www.youtube.com/watch?v=HPjuTK91MA8
@@ -130,7 +125,7 @@ public class RopeAction : MonoBehaviour
 
         predictionHit = raycastHit.point == Vector3.zero ? sphereCastHit : raycastHit;
 
-        // 당기는 오브젝트이며 당기는 스킬이 없으면 not found 판정
+        // 당기는 오브젝트를 감지했으나 당기는 스킬이 없으면 not found 판정
         if (realHitPoint != Vector3.zero && predictionHit.collider.CompareTag("PullableTarget") && !skill.HasPull()) {
             predictionPoint.gameObject.SetActive(false);
             predictionHit.point = Vector3.zero;
@@ -214,13 +209,6 @@ public class RopeAction : MonoBehaviour
 
     private void DrawOutline()
     {
-        // 마우스가 가리키는 오브젝트의 외곽선 표시
-        // if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, grapDistance, WhatIsGrappable)) {
-        //     // PullableTarget이며 pull스킬이 없는 경우를 제외
-        //     if (hit.collider.gameObject != gameObject && (!hit.collider.CompareTag("PullableTarget") || skill.HasPull()))
-        //         hit.collider.gameObject.GetComponent<DrawOutline>().Draw();
-        // }
-
         if (predictionHit.point != Vector3.zero) {
             // PullableTarget이며 pull스킬이 없는 경우를 제외
             if (predictionHit.collider.gameObject != gameObject && (!predictionHit.collider.CompareTag("PullableTarget") || skill.HasPull()))
@@ -246,21 +234,21 @@ public class RopeAction : MonoBehaviour
     }
 
 
-    private void GetInputField()
-    {
-        retractorSpeed = GetFloatValue(retractorSpeed, retractorSpeedI);
-    }
+    // private void GetInputField()
+    // {
+    //     retractorSpeed = GetFloatValue(retractorSpeed, retractorSpeedI);
+    // }
 
-    private void ChangeInputFieldText(TMP_InputField inputField, string s)
-    {
-        if (inputField != null)
-            inputField.text = s;
-    }
+    // private void ChangeInputFieldText(TMP_InputField inputField, string s)
+    // {
+    //     if (inputField != null)
+    //         inputField.text = s;
+    // }
 
-    private float GetFloatValue(float defaultValue, TMP_InputField inputField)
-    {
-        if (inputField != null && float.TryParse(inputField.text, out float result))
-            return result;
-        return defaultValue;
-    }
+    // private float GetFloatValue(float defaultValue, TMP_InputField inputField)
+    // {
+    //     if (inputField != null && float.TryParse(inputField.text, out float result))
+    //         return result;
+    //     return defaultValue;
+    // }
 }

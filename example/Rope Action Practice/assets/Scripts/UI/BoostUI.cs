@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+// 부스터 UI 스크립트
 public class BoostUI : MonoBehaviour
 {
     [SerializeField] private PlayerMovement player;

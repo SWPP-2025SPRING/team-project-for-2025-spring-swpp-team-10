@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// 햄스터 상태에서의 특화된 움직임
 public class HamsterMovement : MonoBehaviour
 {
     [Tooltip("걷는 속도")]
@@ -27,7 +28,7 @@ public class HamsterMovement : MonoBehaviour
     {
         // 수평 속도가 거의 없으면 회전하지 않음
         Vector3 flatVel = new Vector3(rb.velocity.x, 0, rb.velocity.z);
-        if (flatVel.sqrMagnitude < 0.01f) return;
+        if (flatVel.sqrMagnitude < 0.1f) return;
 
         // 바라볼 방향 (y축 고정)
         Quaternion targetRotation = Quaternion.LookRotation(-flatVel.normalized, Vector3.up);
@@ -36,11 +37,7 @@ public class HamsterMovement : MonoBehaviour
         float rotateSpeed = 15f;
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotateSpeed);
     }
-
-
-    // public float acceleration = 30f;
-    // public float deceleration = 20f;
-    // public float controlFactor = 0.5f; // 속도가 커도 조작을 가능하게 해주는 정도 (0~1)
+    
 
     // 움직이고 있다면 true 반환
     public bool Move()
@@ -62,47 +59,8 @@ public class HamsterMovement : MonoBehaviour
         // 오브젝트 잡고 움직이는 중
         if (HamsterRope.onGrappling) HamsterRope.grapRb.velocity = rb.velocity;
 
-        return rb.velocity.sqrMagnitude > 0.01f;
-
-        // Vector3 desiredMove = moveDir * maxSpeed;
-
-        // // 속도 차이 계산
-        // Vector3 velocityDiff = desiredMove - flatVel;
-
-        // // 조작 감도 조절 (속도가 빠르면 조작이 약하게 들어가도록)
-        // float speedFactor = Mathf.Clamp01(1f - (flatVel.magnitude / maxSpeed));
-        // float control = Mathf.Lerp(controlFactor, 1f, speedFactor);
-
-        // // 가속 또는 감속 적용
-        // Vector3 forceToAdd = velocityDiff.normalized * acceleration * control;
+        return rb.velocity.sqrMagnitude > 0.1f;
     }
-
-    // public void Move()
-    // {
-    //     float _maxVelocity = Input.GetKey(KeyCode.LeftShift) ? runVelocity : walkVelocity;
-    //     if (HamsterRope.onGrappling) _maxVelocity *= HamsterRope.speedFactor;
-
-    //     Vector3 rbVec = new Vector3(rb.velocity.x, 0, rb.velocity.z);
-    //     if (moveDir == Vector3.zero) {
-    //         float mul = 3f;
-    //         if (rbVec.magnitude > _maxVelocity) mul = 10f;
-    //         rb.velocity -= rbVec.normalized * mul * Time.deltaTime;
-    //         return;
-    //     }
-
-    //     float addSpeed, accelSpeed, currentSpeed;
-
-    //     currentSpeed = Vector2.Dot(new Vector2(rb.velocity.x, rb.velocity.z), new Vector2(moveDir.x, moveDir.z));
-    //     addSpeed = _maxVelocity - currentSpeed;
-    //     if (addSpeed <= 0)
-    //         return;
-    //     accelSpeed = Mathf.Min(addSpeed, _maxVelocity * 10f * Time.deltaTime);
-
-    //     rb.velocity += moveDir * accelSpeed;
-    //     Debug.Log(moveDir);
-
-    //     if (HamsterRope.onGrappling) HamsterRope.grapRb.velocity = rb.velocity;
-    // }
 
 
     Vector3 GetInputMoveDir()

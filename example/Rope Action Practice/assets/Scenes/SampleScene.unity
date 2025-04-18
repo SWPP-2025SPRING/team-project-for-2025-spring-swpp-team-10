@@ -272,7 +272,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &58559209
 RectTransform:
   m_ObjectHideFlags: 0
@@ -13102,7 +13102,6 @@ MonoBehaviour:
     m_Bits: 384
   predictionSphereCastRadius: 5
   predictionPoint: {fileID: 1934460610}
-  retractorSpeedI: {fileID: 949295153}
 --- !u!114 &1019846228
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13127,9 +13126,6 @@ MonoBehaviour:
   sustainedBoostPower: 400
   isBoost: 0
   glidingMesh: {fileID: 1239680236}
-  massI: {fileID: 1264748419}
-  burstBoostI: {fileID: 1833442740}
-  sustainedBoostI: {fileID: 1374739162}
   velocityTxt: {fileID: 1772642266}
   jumpCount: 0
 --- !u!114 &1019846229
@@ -13175,8 +13171,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   movePower: 1000
   maxVelocity: 20
-  movePowerI: {fileID: 1164104259}
-  maxVelocityI: {fileID: 127235861}
 --- !u!114 &1019846232
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17251,7 +17245,7 @@ Rigidbody:
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 122
+  m_Constraints: 112
   m_CollisionDetection: 0
 --- !u!1 &1675526339
 GameObject:

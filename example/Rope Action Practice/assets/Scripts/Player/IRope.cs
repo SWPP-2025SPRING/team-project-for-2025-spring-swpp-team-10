@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// 로프 액션 Interface
 public interface IRope
 {
     public void RopeShoot(RaycastHit hit); // 로프 시작

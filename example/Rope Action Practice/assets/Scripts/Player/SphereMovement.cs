@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
+// 공 상태에서의 특화된 움직임
 public class SphereMovement : MonoBehaviour
 {
     [Tooltip("이동 시 가해지는 힘")]
@@ -11,9 +12,9 @@ public class SphereMovement : MonoBehaviour
     public float maxVelocity = 20;
 
 
-    [Header("Setting Input")]
-    [SerializeField] public TMP_InputField movePowerI;
-    [SerializeField] public TMP_InputField maxVelocityI;
+    // [Header("Setting Input")]
+    // [SerializeField] public TMP_InputField movePowerI;
+    // [SerializeField] public TMP_InputField maxVelocityI;
 
 
     private Vector3 moveDir = Vector3.zero;
@@ -22,17 +23,17 @@ public class SphereMovement : MonoBehaviour
 
     private void Start()
     {
-        ChangeInputFieldText(movePowerI, movePower.ToString());
-        ChangeInputFieldText(maxVelocityI, maxVelocity.ToString());
+        // ChangeInputFieldText(movePowerI, movePower.ToString());
+        // ChangeInputFieldText(maxVelocityI, maxVelocity.ToString());
 
         lastPosition = transform.position;
     }
 
-    private void Update()
-    {
-        GetInputField();   
+    // private void Update()
+    // {
+    //     GetInputField();   
         
-    }
+    // }
 
     public void UpdateFunc()
     {
@@ -93,22 +94,22 @@ public class SphereMovement : MonoBehaviour
     }
 
 
-    void GetInputField()
-    {
-        movePower = GetFloatValue(movePower, movePowerI);
-        maxVelocity = GetFloatValue(maxVelocity, maxVelocityI);
-    }
+    // void GetInputField()
+    // {
+    //     movePower = GetFloatValue(movePower, movePowerI);
+    //     maxVelocity = GetFloatValue(maxVelocity, maxVelocityI);
+    // }
 
-    void ChangeInputFieldText(TMP_InputField inputField, string s)
-    {
-        if (inputField != null)
-            inputField.text = s;
-    }
+    // void ChangeInputFieldText(TMP_InputField inputField, string s)
+    // {
+    //     if (inputField != null)
+    //         inputField.text = s;
+    // }
 
-    float GetFloatValue(float defaultValue, TMP_InputField inputField)
-    {
-        if (inputField != null && float.TryParse(inputField.text, out float result))
-            return result;
-        return defaultValue;
-    }
+    // float GetFloatValue(float defaultValue, TMP_InputField inputField)
+    // {
+    //     if (inputField != null && float.TryParse(inputField.text, out float result))
+    //         return result;
+    //     return defaultValue;
+    // }
 }

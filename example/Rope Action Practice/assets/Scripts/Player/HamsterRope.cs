@@ -2,11 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// 햄스터 상태에서의 로프액션
 public class HamsterRope : MonoBehaviour, IRope
 {
     public static bool onGrappling { get; private set; }
     public static float speedFactor { get; private set; }
     public static Rigidbody grapRb { get; private set; }
+    
 
     [SerializeField] private float spring = 1000;
     [SerializeField] private float damper = 1, mass = 10;
@@ -18,7 +20,6 @@ public class HamsterRope : MonoBehaviour, IRope
 
     private Rigidbody rb;
     private SpringJoint sj;
-    private RaycastHit hit;
     private Transform hitPoint;
     private Transform grapTransform;
 
@@ -38,8 +39,6 @@ public class HamsterRope : MonoBehaviour, IRope
 
     public void RopeShoot(RaycastHit hit)
     {
-        this.hit = hit;
-
         // SpringJoint 세팅
         float dis = Vector3.Distance(transform.position, hit.point);
 

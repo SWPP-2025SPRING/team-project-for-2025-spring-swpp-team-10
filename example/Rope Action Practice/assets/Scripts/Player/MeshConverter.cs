@@ -2,9 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
+// 햄스터 <-> 공 모드 스왑
 public class MeshConverter : MonoBehaviour
 {
+    public static bool isSphere;
+
+    
     [Header("References")]
     [SerializeField] private Animator animator;
     [SerializeField] private GameObject hamster;
@@ -13,7 +16,7 @@ public class MeshConverter : MonoBehaviour
     private CapsuleCollider hamCol;
     private Renderer[] hamRds;
     private Rigidbody rb;
-    public static bool isSphere;
+    
 
     private void Start()
     {
@@ -21,8 +24,12 @@ public class MeshConverter : MonoBehaviour
         hamRds = hamster.GetComponentsInChildren<Renderer>();
         rb = GetComponent<Rigidbody>();
 
-        //isSphere = true;
-        //Convert();
+        isSphere = false;
+        rb.drag = 1f;
+        transform.rotation = Quaternion.identity;
+        rb.constraints |= RigidbodyConstraints.FreezeRotationX;
+        rb.constraints |= RigidbodyConstraints.FreezeRotationY;
+        rb.constraints |= RigidbodyConstraints.FreezeRotationZ;
     }
 
     public void Convert()
@@ -42,7 +49,7 @@ public class MeshConverter : MonoBehaviour
         }
         else { // hamster -> sphere
             animator.SetTrigger("ChangeToSphere");
-            Invoke(nameof(ChangeObject), 0.4f);
+            Invoke(nameof(ChangeToSphere_AfterSeconds), 0.4f);
 
             rb.MovePosition(transform.position + Vector3.up * 0.5f);
             rb.drag = 0.2f;
@@ -55,7 +62,7 @@ public class MeshConverter : MonoBehaviour
         isSphere = !isSphere;
     }
 
-    private void ChangeObject()
+    private void ChangeToSphere_AfterSeconds()
     {
         rb.MovePosition(transform.position + Vector3.up * 0.5f);
         ball.SetActive(true);
