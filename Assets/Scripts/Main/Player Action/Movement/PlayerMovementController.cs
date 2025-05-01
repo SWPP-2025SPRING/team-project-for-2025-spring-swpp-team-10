@@ -74,14 +74,14 @@ public class PlayerMovementController : MonoBehaviour
             velocityTxt.text = $"Velocity : {rb.velocity.magnitude:F1}\n({rb.velocity.x:F1},{rb.velocity.y:F1},{rb.velocity.z:F1})";
     }
 
-    bool isMoving = false;
+
     void FixedUpdate()
     {
         if (!PlayerManager.instance.isInputLock)
-            isMoving = curMovement.Move();
+            PlayerManager.instance.isMoving = curMovement.Move();
 
         if (!PlayerManager.instance.isBall) 
-            animator.SetBool("IsWalking", isMoving);
+            animator.SetBool("IsWalking", PlayerManager.instance.isMoving);
 
         Gliding();
 
@@ -194,6 +194,7 @@ public class PlayerMovementController : MonoBehaviour
     // 오브젝트와 상호작용할 때 외적으로 힘을 주는 로직을 관리
     void AddExtraForce()
     {
+        // 글라이딩 전용 로직
         if (PlayerManager.instance.isGliding) {
             Vector3 antiGravity;
             // 평상시 글라이딩
@@ -258,6 +259,7 @@ public class PlayerMovementController : MonoBehaviour
     }
 
 
+    // 플레이어가 플랫폼의 움직임과 동기화되어 함께 움직이게 하기
     private Collider curPlatform;
     private Vector3 prevVec;
     void OnCollisionEnter(Collision collision)
@@ -281,6 +283,7 @@ public class PlayerMovementController : MonoBehaviour
             curPlatform = null;
         }
     }
+
 
 
     public void ChangeCurMovement()
