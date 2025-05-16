@@ -15,23 +15,24 @@ public class PingPongMovingPlatformController : MonoBehaviour
     [Tooltip("Start -> End까지 가는 데 걸리는 시간")]
     public float moveTime;
 
-
-    private Rigidbody rb;
+    // 충돌 감지를 위한 별도의 오브젝트 및 리지드바디
+    private GameObject _physicsPlatform;
+    private Rigidbody _physicsPlatformRb;
 
     private void Start()
     {
-        if (!TryGetComponent(out rb)) {
-            rb = gameObject.AddComponent<Rigidbody>();
-            rb.isKinematic = true;
-        }
+        // 원래 오브젝트와 충돌용 오브젝트 분리
+        _physicsPlatform = IsSplitedMovingPlatform.SplitPlatform(gameObject);
+        _physicsPlatformRb = _physicsPlatform.GetComponent<Rigidbody>();
     }
 
 
-    void Update()
+    void FixedUpdate()
     {
         Vector3 startPos = inputType == Type.Transform ? start.position : startVec;
         Vector3 endPos = inputType == Type.Transform ? end.position : endVec;
         Vector3 curPos = Vector3.Lerp(startPos, endPos, Mathf.PingPong((-startDelay + Time.time) / moveTime, 1));
         transform.position = curPos;
+        _physicsPlatformRb.MovePosition(curPos);
     }
 }

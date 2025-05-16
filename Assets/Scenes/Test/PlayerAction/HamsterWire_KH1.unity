@@ -768,14 +768,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c683722accebc54c9ec7edde93833c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  jumpAudio: {fileID: 0}
+  landAudio: {fileID: 0}
+  wireShootAudio: {fileID: 0}
+  boostAudio: {fileID: 0}
+  retractorAudio: {fileID: 0}
+  balloonAudio: {fileID: 0}
+  lightningShockAudio: {fileID: 0}
   isJumping: 0
   canJump: 0
   isGround: 0
   curGroundCollider: {fileID: 0}
+  isGroundMoving: 0
   isMoving: 0
   moveDir: {x: 0, y: 0, z: 0}
   isBall: 0
   onWire: 0
+  onWireCollider: {fileID: 0}
   isGliding: 0
   isBoosting: 0
   isInsideFan: 0
@@ -785,6 +794,7 @@ MonoBehaviour:
   slideWallNormal: {x: 0, y: 0, z: 0}
   isInputLock: 0
   skill: {fileID: 0}
+  playerWire: {fileID: 0}
 --- !u!120 &62285531
 LineRenderer:
   m_ObjectHideFlags: 0
@@ -1075,6 +1085,7 @@ MonoBehaviour:
   endVec: {x: -30, y: 20, z: 8}
   startDelay: 0
   moveTime: 2.2
+  physicsPlatform: {fileID: 0}
 --- !u!65 &74098498
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1168,6 +1179,7 @@ MonoBehaviour:
   canPlayerJump: 1
   canGrabInBallMode: 0
   canGrabInHamsterMode: 0
+  nonDetectable: 0
 --- !u!1 &100983155
 GameObject:
   m_ObjectHideFlags: 0
@@ -1492,7 +1504,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 117154804}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 29.09473, z: 22.483253}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2737,6 +2749,7 @@ MonoBehaviour:
   canPlayerJump: 1
   canGrabInBallMode: 0
   canGrabInHamsterMode: 1
+  nonDetectable: 0
 --- !u!54 &251169563
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3499,6 +3512,7 @@ MonoBehaviour:
   canPlayerJump: 1
   canGrabInBallMode: 0
   canGrabInHamsterMode: 0
+  nonDetectable: 0
 --- !u!1 &361069364
 GameObject:
   m_ObjectHideFlags: 0
@@ -3699,6 +3713,7 @@ MonoBehaviour:
   canPlayerJump: 1
   canGrabInBallMode: 0
   canGrabInHamsterMode: 1
+  nonDetectable: 0
 --- !u!54 &365645032
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3892,6 +3907,7 @@ MonoBehaviour:
   canPlayerJump: 1
   canGrabInBallMode: 0
   canGrabInHamsterMode: 0
+  nonDetectable: 0
 --- !u!1 &388006734
 GameObject:
   m_ObjectHideFlags: 0
@@ -4043,7 +4059,6 @@ GameObject:
   - component: {fileID: 401157494}
   - component: {fileID: 401157493}
   - component: {fileID: 401157492}
-  - component: {fileID: 401157491}
   - component: {fileID: 401157497}
   m_Layer: 0
   m_Name: Cube (4)
@@ -4067,54 +4082,6 @@ Transform:
   m_Father: {fileID: 838661121}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &401157491
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 401157489}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7d1da05046bd35148986cae7896a0d82, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  startWaitTime: 0
-  seqs:
-  - modifyType: 2
-    xb: 0
-    yb: 0
-    zb: 1
-    x: 0
-    y: 0
-    z: 7
-    moveTime: 5
-    intervalAfterMove: 3
-    isCustomCurve: 0
-    ease: 4
-    customEase:
-      serializedVersion: 2
-      m_Curve: []
-      m_PreInfinity: 0
-      m_PostInfinity: 0
-      m_RotationOrder: 0
-  - modifyType: 2
-    xb: 0
-    yb: 0
-    zb: 1
-    x: 0
-    y: 0
-    z: 10
-    moveTime: 5
-    intervalAfterMove: 3
-    isCustomCurve: 0
-    ease: 4
-    customEase:
-      serializedVersion: 2
-      m_Curve: []
-      m_PreInfinity: 0
-      m_PostInfinity: 0
-      m_RotationOrder: 0
 --- !u!114 &401157492
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4178,6 +4145,7 @@ MonoBehaviour:
   canPlayerJump: 1
   canGrabInBallMode: 0
   canGrabInHamsterMode: 0
+  nonDetectable: 0
 --- !u!65 &401157494
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4309,6 +4277,7 @@ MonoBehaviour:
   canPlayerJump: 1
   canGrabInBallMode: 0
   canGrabInHamsterMode: 1
+  nonDetectable: 0
 --- !u!54 &405960293
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4635,6 +4604,7 @@ MonoBehaviour:
   canPlayerJump: 1
   canGrabInBallMode: 0
   canGrabInHamsterMode: 0
+  nonDetectable: 0
 --- !u!65 &458790421
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5414,6 +5384,7 @@ MonoBehaviour:
   canPlayerJump: 1
   canGrabInBallMode: 0
   canGrabInHamsterMode: 1
+  nonDetectable: 0
 --- !u!54 &579630164
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -7013,6 +6984,7 @@ Transform:
   - {fileID: 1436454912}
   - {fileID: 1569802076}
   - {fileID: 401157490}
+  - {fileID: 1224090686}
   m_Father: {fileID: 0}
   m_RootOrder: 12
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -7234,7 +7206,7 @@ Camera:
     height: 1
   near clip plane: 0.1
   far clip plane: 5000
-  field of view: 40
+  field of view: 70
   orthographic: 0
   orthographic size: 10
   m_Depth: -1
@@ -7259,7 +7231,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 846335689}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0.07706502, y: 0.000000007428426, z: -5.741793e-10, w: 0.9970261}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -8311,7 +8283,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 994757519}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 29.09473, z: 22.483253}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -8634,6 +8606,7 @@ MonoBehaviour:
   endVec: {x: -50, y: -3, z: 30}
   startDelay: 0
   moveTime: 0.5
+  physicsPlatform: {fileID: 0}
 --- !u!65 &1072527853
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -8725,8 +8698,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   canPlayerJump: 1
-  canGrabInBallMode: 0
+  canGrabInBallMode: 1
   canGrabInHamsterMode: 0
+  nonDetectable: 0
 --- !u!1 &1088054994
 GameObject:
   m_ObjectHideFlags: 0
@@ -9317,6 +9291,7 @@ MonoBehaviour:
   canPlayerJump: 1
   canGrabInBallMode: 0
   canGrabInHamsterMode: 1
+  nonDetectable: 0
 --- !u!54 &1146450377
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -9444,6 +9419,141 @@ CapsuleCollider:
   m_Height: 2.60555
   m_Direction: 0
   m_Center: {x: -0.0534, y: 0.68751, z: 0}
+--- !u!1 &1224090685
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1224090686}
+  - component: {fileID: 1224090691}
+  - component: {fileID: 1224090690}
+  - component: {fileID: 1224090689}
+  - component: {fileID: 1224090688}
+  - component: {fileID: 1224090687}
+  m_Layer: 0
+  m_Name: Cube (5)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1224090686
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1224090685}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -13, y: 1.3, z: -12.21}
+  m_LocalScale: {x: 9, y: 3, z: 12}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 838661121}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1224090687
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1224090685}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a074c9e73aecfeb47b89dd1b9e10ec2d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  canPlayerJump: 1
+  canGrabInBallMode: 0
+  canGrabInHamsterMode: 0
+  nonDetectable: 0
+--- !u!114 &1224090688
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1224090685}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e0d906719924cc4a85a997346047886, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inputType: 1
+  start: {fileID: 0}
+  end: {fileID: 0}
+  startVec: {x: -13, y: 1.3, z: -20}
+  endVec: {x: -13, y: 1.3, z: 0}
+  startDelay: 0.6
+  moveTime: 1
+  physicsPlatform: {fileID: 0}
+--- !u!65 &1224090689
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1224090685}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!23 &1224090690
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1224090685}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &1224090691
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1224090685}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &1242629777
 GameObject:
   m_ObjectHideFlags: 3
@@ -10087,6 +10197,7 @@ MonoBehaviour:
   canPlayerJump: 1
   canGrabInBallMode: 0
   canGrabInHamsterMode: 1
+  nonDetectable: 0
 --- !u!54 &1314152334
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -10707,7 +10818,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1377340801}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 29.09473, z: 22.483253}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -10812,6 +10923,7 @@ MonoBehaviour:
   canPlayerJump: 1
   canGrabInBallMode: 0
   canGrabInHamsterMode: 1
+  nonDetectable: 0
 --- !u!54 &1385723386
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -10918,7 +11030,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1400680714}
   m_LocalRotation: {x: 0.06370128, y: 0, z: 0, w: 0.99796903}
-  m_LocalPosition: {x: 0, y: 3, z: -30}
+  m_LocalPosition: {x: 0, y: 29, z: -4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -11170,6 +11282,7 @@ MonoBehaviour:
   endVec: {x: -30, y: -2, z: -3}
   startDelay: 0.6
   moveTime: 4
+  physicsPlatform: {fileID: 0}
 --- !u!65 &1436454909
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -11263,6 +11376,7 @@ MonoBehaviour:
   canPlayerJump: 1
   canGrabInBallMode: 0
   canGrabInHamsterMode: 0
+  nonDetectable: 0
 --- !u!1 &1437629427
 GameObject:
   m_ObjectHideFlags: 0
@@ -11528,6 +11642,7 @@ MonoBehaviour:
   canPlayerJump: 1
   canGrabInBallMode: 0
   canGrabInHamsterMode: 1
+  nonDetectable: 0
 --- !u!54 &1498222685
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -12702,7 +12817,6 @@ GameObject:
   - component: {fileID: 1569802073}
   - component: {fileID: 1569802072}
   - component: {fileID: 1569802071}
-  - component: {fileID: 1569802077}
   - component: {fileID: 1569802078}
   m_Layer: 0
   m_Name: Cube (3)
@@ -12774,6 +12888,7 @@ MonoBehaviour:
   canPlayerJump: 1
   canGrabInBallMode: 0
   canGrabInHamsterMode: 0
+  nonDetectable: 0
 --- !u!65 &1569802073
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -12852,54 +12967,6 @@ Transform:
   m_Father: {fileID: 838661121}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1569802077
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1569802070}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7d1da05046bd35148986cae7896a0d82, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  startWaitTime: 0
-  seqs:
-  - modifyType: 2
-    xb: 0
-    yb: 0
-    zb: 1
-    x: 0
-    y: 0
-    z: 7
-    moveTime: 5
-    intervalAfterMove: 3
-    isCustomCurve: 0
-    ease: 4
-    customEase:
-      serializedVersion: 2
-      m_Curve: []
-      m_PreInfinity: 0
-      m_PostInfinity: 0
-      m_RotationOrder: 0
-  - modifyType: 2
-    xb: 0
-    yb: 0
-    zb: 1
-    x: 0
-    y: 0
-    z: 10
-    moveTime: 5
-    intervalAfterMove: 3
-    isCustomCurve: 0
-    ease: 4
-    customEase:
-      serializedVersion: 2
-      m_Curve: []
-      m_PreInfinity: 0
-      m_PostInfinity: 0
-      m_RotationOrder: 0
 --- !u!54 &1569802078
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -13699,6 +13766,7 @@ MonoBehaviour:
   canPlayerJump: 1
   canGrabInBallMode: 0
   canGrabInHamsterMode: 0
+  nonDetectable: 0
 --- !u!65 &1674434671
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -15983,6 +16051,7 @@ MonoBehaviour:
   canPlayerJump: 1
   canGrabInBallMode: 0
   canGrabInHamsterMode: 1
+  nonDetectable: 0
 --- !u!1 &2056527053
 GameObject:
   m_ObjectHideFlags: 0

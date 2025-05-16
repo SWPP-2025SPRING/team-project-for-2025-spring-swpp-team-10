@@ -1,33 +1,54 @@
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 using UnityEngine;
 using DG.Tweening;
 using DG.Tweening.Core.Easing;
 
-// ith 애니메이션 각각에서 Position, Rotation, Scale 중 하나를 선택하고,
-// Vector3값 자체가 아닌 x, y, z 중 1~3가지만 골라서 그 값만 바꾼다.
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
+// ith 애니메이션 각각에서 Position, Rotation, Scale 중 하나를 선택하고,
+// Vector3값 자체가 아닌 x, y, z 중 1~3가지만 골라서 그 값만 조정합니다.
 public class MovingPlatformController : MonoBehaviour
 {
     public enum Type { Position, Rotation, Scale }
-    //[Header("moveTime 동안 움직인 뒤 interval 동안 체류 \n0th -> 1th -> ... -> nth -> 0th -> ...")]
+
     [Tooltip("해당 시간만큼 대기하다가 이동 시작")]
     public float startWaitTime;
+
+    [Tooltip("이동 시퀀스 리스트")]
     public MoveSequence[] seqs;
 
-    private Vector3 initPos, initRot, initScale;
+    // 초기 위치/회전/스케일 저장용
+    private Vector3 _initPos, _initRot, _initScale;
+    // 어떤 Transform 속성이 사용되는지 확인하는 플래그
+    private bool _isModifyPos, _isModifyRot, _isModifyScale;
 
-    void Start()
+    // 충돌 감지를 위한 별도의 오브젝트 및 리지드바디
+    private GameObject _physicsPlatform;
+    private Rigidbody _physicsPlatformRb;
+
+    private void Start()
     {
+        // 원래 오브젝트와 충돌용 오브젝트 분리
+        _physicsPlatform = IsSplitedMovingPlatform.SplitPlatform(gameObject);
+        _physicsPlatformRb = _physicsPlatform.GetComponent<Rigidbody>();
+
         Init();
         Invoke("SeqStart", startWaitTime);
     }
 
-    void Init()
+    private void LateUpdate()
+    {
+        if (_isModifyPos) _physicsPlatformRb.MovePosition(transform.position);
+        if (_isModifyRot) _physicsPlatformRb.MoveRotation(transform.rotation);
+        if (_isModifyScale) _physicsPlatform.transform.localScale = transform.localScale;
+    }
+
+    // 시작 위치/회전/스케일 설정
+    private void Init()
     {
         Vector3 value;
-        switch (seqs[0].modifyType) 
+        switch (seqs[0].modifyType)
         {
             case Type.Position:
                 value = transform.localPosition;
@@ -40,22 +61,24 @@ public class MovingPlatformController : MonoBehaviour
                 GetValue(ref value, 0);
                 transform.localRotation = Quaternion.Euler(value);
                 break;
-                
-            case Type.Scale:  
+
+            case Type.Scale:
                 value = transform.localScale;
                 GetValue(ref value, 0);
                 transform.localScale = value;
                 break;
         }
 
-        initPos = transform.localPosition;
-        initRot = transform.localEulerAngles;
-        initScale = transform.localScale;
+        // 초기값 저장
+        _initPos = transform.localPosition;
+        _initRot = transform.localEulerAngles;
+        _initScale = transform.localScale;
     }
 
-    void GetValue(ref Vector3 value, int idx)
+    // idx번째 시퀀스에서 조정하는 x/y/z값을 현재 value에 반영
+    private void GetValue(ref Vector3 value, int idx)
     {
-        if (idx >= seqs.Length) 
+        if (idx >= seqs.Length)
         {
             Debug.LogWarning("존재하지 않는 seqs의 " + idx + " 번째 인덱스에 접근하려 합니다.");
             return;
@@ -67,25 +90,29 @@ public class MovingPlatformController : MonoBehaviour
         return;
     }
 
-    void SeqStart()
+    // 모든 시퀀스를 등록하고 반복 루프 시작
+    private void SeqStart()
     {
+        DetermineModifiedTransformTypes();
+
         Sequence seq = DOTween.Sequence();
-        for (int i = 1; i < seqs.Length; i++) 
+        for (int i = 1; i < seqs.Length; i++)
         {
             seq.Append(Do(i))
                .AppendInterval(seqs[i].intervalAfterMove);
         }
-        
+
+        // 마지막엔 초기값으로 돌아오는 동작 추가
         seq.Append(DoInit());
         seq.AppendInterval(seqs[0].intervalAfterMove);
         seq.SetLoops(-1, LoopType.Restart);
     }
 
-    // modifyType에 맞는 행동 반환
-    Sequence Do(int i)
+    // i번째 시퀀스의 설정에 따른 Tween 동작을 반환
+    private Sequence Do(int i)
     {
         Sequence seq = DOTween.Sequence();
-        switch (seqs[i].modifyType) 
+        switch (seqs[i].modifyType)
         {
             case Type.Position:
                 if (seqs[i].xb) seq.Join(CustomSetEase(transform.DOLocalMoveX(seqs[i].x, seqs[i].moveTime), i));
@@ -108,15 +135,16 @@ public class MovingPlatformController : MonoBehaviour
         return seq;
     }
 
-    Sequence DoInit()
+    // 초기 상태로 돌아가는 Tween 시퀀스 생성
+    private Sequence DoInit()
     {
         bool[] move = new bool[3];
         bool rot = false;
         bool[] scale = new bool[3];
 
-        foreach (MoveSequence ms in seqs) 
+        foreach (MoveSequence ms in seqs)
         {
-            switch (ms.modifyType) 
+            switch (ms.modifyType)
             {
                 case Type.Position:
                     if (ms.xb) move[0] = true;
@@ -135,26 +163,48 @@ public class MovingPlatformController : MonoBehaviour
         }
 
         Sequence seq = DOTween.Sequence();
-        if (move[0]) seq.Join(CustomSetEase(transform.DOLocalMoveX(initPos.x, seqs[0].moveTime), 0));
-        if (move[1]) seq.Join(CustomSetEase(transform.DOLocalMoveY(initPos.y, seqs[0].moveTime), 0));
-        if (move[2]) seq.Join(CustomSetEase(transform.DOLocalMoveZ(initPos.z, seqs[0].moveTime), 0));
+        if (move[0]) seq.Join(CustomSetEase(transform.DOLocalMoveX(_initPos.x, seqs[0].moveTime), 0));
+        if (move[1]) seq.Join(CustomSetEase(transform.DOLocalMoveY(_initPos.y, seqs[0].moveTime), 0));
+        if (move[2]) seq.Join(CustomSetEase(transform.DOLocalMoveZ(_initPos.z, seqs[0].moveTime), 0));
 
-        if (rot) seq.Join(CustomSetEase(transform.DOLocalRotate(initRot, seqs[0].moveTime), 0));
+        if (rot) seq.Join(CustomSetEase(transform.DOLocalRotate(_initRot, seqs[0].moveTime), 0));
 
-        if (scale[0]) seq.Join(CustomSetEase(transform.DOScaleX(initScale.x, seqs[0].moveTime), 0));
-        if (scale[1]) seq.Join(CustomSetEase(transform.DOScaleY(initScale.y, seqs[0].moveTime), 0));
-        if (scale[2]) seq.Join(CustomSetEase(transform.DOScaleZ(initScale.z, seqs[0].moveTime), 0));
+        if (scale[0]) seq.Join(CustomSetEase(transform.DOScaleX(_initScale.x, seqs[0].moveTime), 0));
+        if (scale[1]) seq.Join(CustomSetEase(transform.DOScaleY(_initScale.y, seqs[0].moveTime), 0));
+        if (scale[2]) seq.Join(CustomSetEase(transform.DOScaleZ(_initScale.z, seqs[0].moveTime), 0));
         return seq;
     }
 
-    // Tween에 customEase또는 ease를 입힘
-    Tween CustomSetEase(Tween tw, int i)
+    // 커스텀 이징 혹은 일반 이징 적용
+    private Tween CustomSetEase(Tween tw, int i)
     {
         if (seqs[i].isCustomCurve) return tw.SetEase(seqs[i].customEase);
         else return tw.SetEase(seqs[i].ease);
     }
-    
+
+
+    // 어떤 Transform 속성이 시퀀스에 포함되는지 판단하고 bool 프로퍼티 할당
+    private void DetermineModifiedTransformTypes()
+    {
+        _isModifyPos = _isModifyRot = _isModifyScale = false;
+        for (int i = 0; i < seqs.Length; i++)
+        {
+            switch (seqs[i].modifyType)
+            {
+                case Type.Position:
+                    _isModifyPos = true;
+                    break;
+                case Type.Rotation:
+                    _isModifyRot = true;
+                    break;
+                case Type.Scale:
+                    _isModifyScale = true;
+                    break;
+            }
+        }
+    }
 }
+
 
 [System.Serializable]
 public class MoveSequence 
