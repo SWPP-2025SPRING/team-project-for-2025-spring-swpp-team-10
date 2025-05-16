@@ -15,6 +15,10 @@ public class GroundCheck : MonoBehaviour
     void Start()
     {
         detectionMask = ~LayerMask.GetMask("Player");
+        
+        // 이동하는 플랫폼의 물리효과를 주는 전용 오브젝트의 콜라이더는 제외함. 이동플랫폼의 콜라이더는 원본 플랫폼에도 있음
+        detectionMask &= ~LayerMask.GetMask("MovingPlatformPhysics");
+        detectionMask &= ~LayerMask.GetMask("MovingPlatformGhost");
     }
 
     
