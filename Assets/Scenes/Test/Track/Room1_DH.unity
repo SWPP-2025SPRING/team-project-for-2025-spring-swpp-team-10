@@ -13049,10 +13049,10 @@ GameObject:
   - component: {fileID: 1670191636}
   - component: {fileID: 1670191634}
   - component: {fileID: 1670191637}
+  - component: {fileID: 1670191638}
   - component: {fileID: 1670191633}
   - component: {fileID: 1670191630}
   - component: {fileID: 1670191632}
-  - component: {fileID: 1670191638}
   - component: {fileID: 1670191631}
   m_Layer: 0
   m_Name: Manager
