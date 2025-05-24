@@ -61,6 +61,4 @@ public class UIManager : RuntimeSingleton<UIManager>
 		pausedMenuPanel.SetActive(false);
 		settingsPanel.SetActive(false);
 	}
-	
-	
 }
