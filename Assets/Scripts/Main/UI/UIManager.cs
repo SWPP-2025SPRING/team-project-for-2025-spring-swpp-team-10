@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using Hampossible.Utils;
 
 public class UIManager : RuntimeSingleton<UIManager>
 {
@@ -8,17 +9,40 @@ public class UIManager : RuntimeSingleton<UIManager>
 	[SerializeField] private GameObject pausedMenuPanel, settingsPanel;
 	[SerializeField] private NextCheckpointUIController nextCheckpointUI;
 	[SerializeField] private GameObject endingTextObj;
+	[SerializeField] private GameObject storePanelPrefab;
 
-    protected override void Awake()
-    {
-        base.Awake();
-    }
+	private GameObject _storePanel;
+
+	protected override void Awake()
+	{
+		base.Awake();
+
+		Canvas canvas = FindObjectOfType<Canvas>();
+		if (canvas == null)
+		{
+			HLogger.Error("캔버스를 찾지 못했습니다.");
+			return;
+		}
+
+		// StorePanel 생성 및 RectTransform 설정
+		_storePanel = Instantiate(storePanelPrefab, canvas.transform);
+		RectTransform storeRect = _storePanel.GetComponent<RectTransform>();
+		storeRect.anchorMin = Vector2.zero;
+		storeRect.anchorMax = Vector2.one;
+		storeRect.offsetMin = Vector2.zero;
+		storeRect.offsetMax = Vector2.zero;
+		HLogger.Info("StorePanel 생성 완료");
+
+		_storePanel.SetActive(false);
+		HLogger.Info("StorePanelController 초기화 완료");
+	}
 
 	public void InitUIManager()
 	{
 		pausedMenuPanel.SetActive(false);
 		settingsPanel.SetActive(false);
 		endingTextObj.SetActive(false);
+
 
 		// 아래는 추후에 저장 기능이 구현되면 PlayerData를 받아서 값을 설정하도록 수정되어야 함
 		timerText.text = "Timer [00:00.00 s]";
@@ -69,6 +93,27 @@ public class UIManager : RuntimeSingleton<UIManager>
 		endingTextObj.SetActive(true);
 		pausedMenuPanel.SetActive(false);
 		settingsPanel.SetActive(false);
+	}
+
+
+	public void OpenSettings()
+	{
+		// TODO: Settings 패널 연결 필요
+	}
+
+	public void CloseSettings()
+	{
+		// TODO: Settings 패널 연결 필요
+	}
+
+	public void OpenStore()
+	{
+		_storePanel.GetComponent<StorePanelController>().Open();
+	}
+
+	public void CloseStore()
+	{
+		_storePanel.GetComponent<StorePanelController>().Close();
 	}
 
 	public void UpdateNextCheckpoint(Vector3 nextCpPos)
