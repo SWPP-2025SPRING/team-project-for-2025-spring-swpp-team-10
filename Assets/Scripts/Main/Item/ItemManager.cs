@@ -44,7 +44,7 @@ public class ItemManager : PersistentSingleton<ItemManager>
             {
                 var userItem = UserItem.Create(item);
                 _userItems.Add(userItem);
-                HLogger.Skill.Debug($"유저 아이템 초기화됨: {item.name} (ID: {item.id}) x{userItem.count}", this);
+                HLogger.Skill.Debug($"유저 아이템 초기화됨: {item.meta.name} (ID: {item.meta.id}) x{userItem.count}", this);
             }
         }
     }
@@ -72,7 +72,7 @@ public class ItemManager : PersistentSingleton<ItemManager>
         foreach (var userItem in _userItems)
         {
             var item = userItem.item;
-            HLogger.Skill.Debug($"- {item.name} (ID: {item.id}): {userItem.count}개", this);
+            HLogger.Skill.Debug($"- {item.meta.name} (ID: {item.meta.id}): {userItem.count}개", this);
         }
 
         HLogger.Skill.Debug($"현재 보유 코인: {_currentCoinCount}개", this);
@@ -83,10 +83,10 @@ public class ItemManager : PersistentSingleton<ItemManager>
     // --------------------------------------------------------------------------------
     public bool IsItemLocked(Item item)
     {
-        var userItem = _userItems.Find(ui => ui.item.id == item.id);
+        var userItem = _userItems.Find(ui => ui.item.meta.id == item.meta.id);
         if (userItem == null)
         {
-            HLogger.General.Error($"아이템을 찾을 수 없습니다: {item.name}", this);
+            HLogger.General.Error($"아이템을 찾을 수 없습니다: {item.meta.name}", this);
             return false;
         }
 
@@ -95,10 +95,10 @@ public class ItemManager : PersistentSingleton<ItemManager>
 
     public bool IsItemEquipped(Item item)
     {
-        var userItem = _userItems.Find(ui => ui.item.id == item.id);
+        var userItem = _userItems.Find(ui => ui.item.meta.id == item.meta.id);
         if (userItem == null)
         {
-            HLogger.General.Error($"아이템을 찾을 수 없습니다: {item.name}", this);
+            HLogger.General.Error($"아이템을 찾을 수 없습니다: {item.meta.name}", this);
             return false;
         }
 
@@ -116,23 +116,23 @@ public class ItemManager : PersistentSingleton<ItemManager>
             return;
         }
 
-        var userItem = _userItems.Find(ui => ui.item.id == item.id);
+        var userItem = _userItems.Find(ui => ui.item.meta.id == item.meta.id);
 
         if (userItem != null && userItem.count > 0)
         {
             if (userItem.isLocked)
             {
-                HLogger.Player.Warning($"아이템 잠금 해제 필요: {item.name}", this);
+                HLogger.Player.Warning($"아이템 잠금 해제 필요: {item.meta.name}", this);
                 return;
             }
             else if (userItem.count <= 0)
             {
-                HLogger.Player.Warning($"아이템 수량 부족: {item.name}", this);
+                HLogger.Player.Warning($"아이템 수량 부족: {item.meta.name}", this);
                 return;
             }
 
             userItem.isEquipped = true;
-            HLogger.Player.Info($"아이템 장착됨: {item.name}", this);
+            HLogger.Player.Info($"아이템 장착됨: {item.meta.name}", this);
             return;
         }
     }
@@ -149,15 +149,15 @@ public class ItemManager : PersistentSingleton<ItemManager>
             return;
         }
 
-        var userItem = _userItems.Find(ui => ui.item.id == item.id);
+        var userItem = _userItems.Find(ui => ui.item.meta.id == item.meta.id);
         if (userItem == null)
         {
-            HLogger.Player.Warning($"아이템을 찾을 수 없습니다: {item.name}", this);
+            HLogger.Player.Warning($"아이템을 찾을 수 없습니다: {item.meta.name}", this);
             return;
         }
 
         userItem.isEquipped = false;
-        HLogger.Player.Info($"아이템 해제됨: {item.name}", this);
+        HLogger.Player.Info($"아이템 해제됨: {item.meta.name}", this);
     }
 
     /// <summary>
@@ -165,15 +165,15 @@ public class ItemManager : PersistentSingleton<ItemManager>
     /// </summary>
     public void UnlockItem(Item item)
     {
-        var userItem = _userItems.Find(ui => ui.item.id == item.id);
+        var userItem = _userItems.Find(ui => ui.item.meta.id == item.meta.id);
         if (userItem == null)
         {
             HLogger.General.Error("null 아이템을 잠금 해제하려고 시도했습니다.", this);
             return;
-    }
+        }
 
         userItem.isLocked = false;
-        HLogger.Player.Info($"아이템 잠금 해제됨: {item.name}", this);
+        HLogger.Player.Info($"아이템 잠금 해제됨: {item.meta.name}", this);
         return;
     }
 
@@ -291,13 +291,13 @@ public class ItemManager : PersistentSingleton<ItemManager>
 
         if (IsItemLocked(item))
         {
-            HLogger.Player.Warning($"아이템 구매 실패: 아이템이 잠겨있습니다. ID={item.id}", this);
+            HLogger.Player.Warning($"아이템 구매 실패: 아이템이 잠겨있습니다. ID={item.meta.id}", this);
             return false;
         }
 
-        if (_currentCoinCount < item.price)
+        if (_currentCoinCount < item.levels[item.currentLevel].price)
         {
-            HLogger.Player.Warning($"코인 부족: 현재 {_currentCoinCount}, 필요 {item.price}", this);
+            HLogger.Player.Warning($"코인 부족: 현재 {_currentCoinCount}, 필요 {item.levels[item.currentLevel].price}", this);
             return false;
         }
 
@@ -317,15 +317,16 @@ public class ItemManager : PersistentSingleton<ItemManager>
             return false;
         }
 
-        if (!SpendCoin(item.price))
+        if (!SpendCoin(item.levels[item.currentLevel].price))
         {
+            HLogger.Player.Warning($"아이템 구매 실패: 코인 부족. ID={item.meta.id}", this);
             return false;
         }
 
-        var userItem = _userItems.Find(ui => ui.item.id == item.id);
+        var userItem = _userItems.Find(ui => ui.item.meta.id == item.meta.id);
         userItem.count += 1;
 
-        HLogger.Player.Info($"아이템 구매 성공: {item.name} (ID: {item.id})", this);
+        HLogger.Player.Info($"아이템 구매 성공: {item.meta.name} (ID: {item.meta.id})", this);
         return true;
     }
 }

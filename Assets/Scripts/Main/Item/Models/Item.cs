@@ -1,5 +1,23 @@
 using System;
+using Unity.VisualScripting;
 using UnityEngine;
+
+[Serializable]
+public class ItemMeta
+{
+    [Tooltip("아이템 고유 ID")]
+    public int id;
+
+    [Tooltip("아이템 기본 이름")]
+    public string name;
+
+    [Tooltip("아이템 기본 설명")]
+    public string description;
+
+    [Tooltip("아이템 아이콘")]
+    public Sprite image;
+}
+
 
 
 /// <summary>
@@ -8,35 +26,39 @@ using UnityEngine;
 [Serializable]
 public class Item
 {
-    [Tooltip("아이템 고유 ID")]
-    public int id;
+    public ItemMeta meta;
 
-    [Tooltip("아이템 이름")]
-    public string name;
+    [Tooltip("아이템의 레벨별 데이터")]
+    public ItemLevelData[] levels;
 
-    [Tooltip("아이템 설명")]
+    [Tooltip("아이템 기본 설명")]
     public string description;
 
-    [Tooltip("아이템 가격 (코인 단위)")]
-    public int price;
+    // 현재 적용 중인 레벨 (선택사항)
+    public int currentLevel = 0;
 
-    public Sprite image;
+    public int CurrentPrice => levels != null && currentLevel < levels.Length
+        ? levels[currentLevel].price
+        : 0;
 
     public static Item Create(
         int id,
         string name,
         string description,
-        int price = 0,
-        Sprite image = null
-        )
+        Sprite image = null,
+        ItemLevelData[] levels = null
+    )
     {
         return new Item
         {
-            id = id,
-            name = name,
-            description = description,
-            price = price,
-            image = image
+            meta = new ItemMeta
+            {
+                id = id,
+                name = name,
+                description = description,
+                image = image
+            },
+            levels = levels
         };
     }
 }

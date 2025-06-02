@@ -45,11 +45,11 @@ public class StorePanelController : MonoBehaviour
             var view = go.GetComponent<UI_StoreStandItem>();
             view?.Bind(new UI_StoreStandItemData
             {
-                id = item.id,
-                icon = item.image,
-                title = item.name,
+                id = item.meta.id,
+                icon = item.meta.image,
+                title = item.meta.name,
                 description = item.description,
-                price = item.price,
+                price = item.levels[item.currentLevel].price,
                 isEquipped = ItemManager.Instance.IsItemEquipped(item),
                 isLocked = ItemManager.Instance.IsItemLocked(item)
             });
@@ -64,7 +64,7 @@ public class StorePanelController : MonoBehaviour
         {
             var go = Instantiate(inventoryItemPrefab, inventoryItemGrid);
             var view = go.GetComponent<UI_InventoryItem>();
-            view?.Bind(userItem.item.image, false); // isEmpty = false
+            view?.Bind(userItem.item.meta.image, false); // isEmpty = false
         }
     }
 
