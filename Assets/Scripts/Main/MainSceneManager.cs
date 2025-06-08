@@ -83,6 +83,7 @@ public class MainSceneManager : RuntimeSingleton<MainSceneManager>
     private enum GameStates { Playing, Paused, BadEnding, GoodEnding };
     private GameStates _gameState;
     private float _timeRecord;
+    public float PlayTime => _timeRecord;
 
     protected override void Awake()
     {
