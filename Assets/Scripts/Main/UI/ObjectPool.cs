@@ -9,7 +9,7 @@ public class ObjectPool : MonoBehaviour
 
     private Queue<GameObject> _pool = new Queue<GameObject>();
 
-    public void InitObjectPool(GameObject prefab, int initialSize, Transform parent = null)
+    public void InitObjectPool(GameObject prefab, Transform parent, int initialSize)
     {
         _prefab = prefab;
         _initialSize = initialSize;

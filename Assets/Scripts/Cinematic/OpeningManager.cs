@@ -6,28 +6,39 @@ using TMPro;
 using UnityEngine;
 using AudioSystem;
 
-public class OpeningManager : CinematicSequence
+public class OpeningManager : MonoBehaviour
 {
     [Header("References")]
+    [SerializeField] private GameObject openingCanvas;
+    [SerializeField] private Camera logoCam;
+    [SerializeField] private Camera[] cutSceneCams;
     [SerializeField] private GameObject logoPanels, cutScenePanels;
     [SerializeField] private TextMeshProUGUI subtitleText;
     [SerializeField] private GameObject townLights;
 
     [Header("House")]
-    [SerializeField] private float initFadeInDuration;
+    [SerializeField] private Camera houseCam;
     [SerializeField] private Vector3 houseCamPos, houseCamRot;
     [SerializeField] private float houseCamDuration;
-    [SerializeField] private Vector3 roomCamPos, roomCamRot;
-    [SerializeField] private float roomCamDuration;
-    [SerializeField] private Vector3 boxCamPos, boxCamRot;
-    [SerializeField] private float boxCamDuration;
     
-    [Header("Logo")]
+    [Header("Room")]
+    [SerializeField] private Camera roomCam;
+    [SerializeField] private Vector3[] roomCamPos, roomCamRot;
+    [SerializeField] private float[] roomCamDuration;
+
+    [Header("Logo - Timing")]
     [SerializeField] private float beforeShrinkDuration;
+    [SerializeField] private float shrinkDuration, standUpDuration;
+    [SerializeField] private float shrinkHoldingDuration, logoHoldingDuration;
+
+    [Header("Logo - Values")]
+    [SerializeField] private Transform hamster;
     [SerializeField] private Vector3 logoCamPos, logoCamRot;
-    [SerializeField] private float shrinkDuration, holdShrinkDuration;
-    [SerializeField] private float[] paddingSize;
-    [SerializeField] private float standUpDuration, holdLogoDuration;
+    [SerializeField] private Vector3 hamsterStartPos, hamsterEndPos;
+    [SerializeField] private Vector3 hamsterStartRot, hamsterEndRot;
+    [SerializeField] private float leftPadding, rightPadding, topPadding, bottomPadding;
+    [SerializeField] private RectTransform leftPaddingRect, rightPaddingRect, topPaddingRect, bottomPaddingRect;
+    [SerializeField] private GameObject logoImg;
 
     [Header("CutScene - Values")] 
     [SerializeField] private GameObject[] covers;
@@ -40,7 +51,6 @@ public class OpeningManager : CinematicSequence
     [SerializeField] private float afterCutsceneDuration;
     [SerializeField] private float[] cutSceneDuration;
     [SerializeField] private float[] cutSceneHoldingDuration, cutSceneCamWalkDuration;
-    [SerializeField] private float cutSceneFadeOutDuration;
 
     private string[] _subtitles = new []
     {
@@ -58,162 +68,179 @@ public class OpeningManager : CinematicSequence
     private readonly float _maxHeight = 1100f;
     private readonly float _maxWidth = 1940f;
     
-    private ObjectPool _camPool;
-    private GameObject _currCam;
-    
-    protected override void Init()
+    private void Awake()
     {
-        // Common 초기화
-        _camPool = gameObject.AddComponent<ObjectPool>();
-        _camPool.InitObjectPool(Common.CamPrefab, 6);
-        Common.OpeningCanvas.SetActive(true);
+        openingCanvas.SetActive(false);
         
-        // Track 초기화
+        houseCam.enabled = false;
+        houseCam.gameObject.SetActive(false);
         
-        // Town 초기화
+        roomCam.enabled = false;
+        logoCam.gameObject.SetActive(false);
         
-        // Cage 초기화
-    }
-    
-    public override IEnumerator Run()
-    {
-        // BGM 볼륨 및 화면 fade in
-        FadeInScreen(initFadeInDuration);
-        StartCoroutine(FadeInBgm(BgmType.OpeningHouseBgm, initFadeInDuration));
+        logoCam.enabled = false;
+        logoCam.gameObject.SetActive(false);
 
-        // 집 -> 방 -> 박스 순으로 비추는 장면
-        yield return House();
-        
-        // Logo 보여주는 장면
-        _camPool.ReturnObject(_currCam);
-        yield return Logo();
-        
-        // CutScene
-        yield return CutScene();
-        
-        // FadeOut 및 Scene Load
-        FadeOutScreen(cutSceneFadeOutDuration, Color.black);
-        yield return FadeOutBgm(cutSceneFadeOutDuration);
-
-        CinematicSceneManager.Instance.Load("MainScene");
-    }
-
-    private IEnumerator House()
-    {
-        // House
-        _currCam = _camPool.GetObject();
-        _currCam.transform.SetParent(Town.Transform);
-        _currCam.transform.localPosition = houseCamPos;
-        _currCam.transform.rotation = Quaternion.Euler(houseCamRot);
-        _currCam.SetActive(true);
-        Town.Lights.SetActive(true);
-        
-        yield return new WaitForSeconds(houseCamDuration);
-        
-        // Room
-        _currCam.transform.SetParent(Track.Transform);
-        _currCam.transform.localPosition = roomCamPos;
-        _currCam.transform.rotation = Quaternion.Euler(roomCamRot);
-        Town.Lights.SetActive(false);
-        Track.Hamster.House();
-        Track.Hamster.gameObject.SetActive(true);
-        AudioManager.Instance.SetBgmVolume(0.4f);
-        
-        yield return new WaitForSeconds(roomCamDuration);
-        
-        // Box
-        _currCam.transform.localPosition = boxCamPos;
-        _currCam.transform.rotation = Quaternion.Euler(boxCamRot);
-        
-        yield return new WaitForSeconds(boxCamDuration);
-    }
-
-    private IEnumerator Logo()
-    {
-        // 카메라 초기화
-        _currCam = _camPool.GetObject();
-        _currCam.transform.SetParent(Track.Transform);
-        _currCam.transform.localPosition = logoCamPos;
-        _currCam.transform.rotation = Quaternion.Euler(logoCamRot);
-        _currCam.SetActive(true);
-        
-        // padding 초기화
-        Vector2 maxHeightSize = new Vector2(0f, _maxHeight);
-        Vector2 maxWidthSize = new Vector2(_maxWidth, 0f);
-        
-        Vector2 leftPaddingSize = new Vector2(paddingSize[0], _maxHeight);
-        Vector2 rightPaddingSize = new Vector2(paddingSize[1], _maxHeight);
-        Vector2 topPaddingSize = new Vector2(_maxWidth, paddingSize[2]);
-        Vector2 bottomPaddingSize = new Vector2(_maxWidth, paddingSize[3]);
-        
-        // Shrink
-        yield return new WaitForSeconds(beforeCutsceneDuration);
-        
-        // StartCoroutine(FadeOutBgm(shrinkDuration));
-        AudioManager.Instance.SetSfxVolume(0.3f);
-        AudioManager.Instance.SetSfxPitch(0.55f);
-        AudioManager.Instance.PlaySfx2D(SfxType.OpeningShrinkSfx);
-        
-        for (float elapsed = 0; elapsed < shrinkDuration; elapsed += Time.deltaTime)
+        for (int i = 0; i < cutSceneCams.Length; i++)
         {
-            Common.Paddings[0].sizeDelta = Vector2.Lerp(maxHeightSize, leftPaddingSize, elapsed / shrinkDuration);
-            Common.Paddings[1].sizeDelta = Vector2.Lerp(maxHeightSize, rightPaddingSize, elapsed / shrinkDuration);
-            Common.Paddings[3].sizeDelta = Vector2.Lerp(maxWidthSize, topPaddingSize, elapsed / shrinkDuration);
-            Common.Paddings[2].sizeDelta = Vector2.Lerp(maxWidthSize, bottomPaddingSize, elapsed / shrinkDuration);
+            cutSceneCams[i].enabled = false;
+            cutSceneCams[i].gameObject.SetActive(false);
+            cutSceneCams[i].rect = new Rect(cutSceneCamsRectPos[i], cutSceneCamsRectRot[i]);
+            cutSceneCams[i].transform.localPosition = cutSceneCamsTransStartPos[i];
+            cutSceneCams[i].transform.rotation = Quaternion.Euler(cutSceneCamsTransStartRot[i]);
+        }
+        
+        logoPanels.SetActive(false);
+        cutScenePanels.SetActive(false);
+        
+        hamster.localPosition = hamsterStartPos;
+        hamster.rotation = Quaternion.Euler(hamsterStartRot);
+    }
+
+    public IEnumerator OpeningCoroutine(float fadeDuration)
+    {
+        openingCanvas.SetActive(true);
+        yield return HouseCoroutine(fadeDuration);
+        yield return RoomCoroutine();
+        yield return LogoCoroutine();
+        yield return CutSceneCoroutine();
+    }
+
+    private IEnumerator HouseCoroutine(float fadeDuration)
+    {
+        townLights.SetActive(true);
+        
+        houseCam.transform.localPosition = houseCamPos;
+        houseCam.transform.rotation = Quaternion.Euler(houseCamRot);
+        houseCam.enabled = true;
+        houseCam.gameObject.SetActive(true);
+        
+        AudioManager.Instance.PlayBgm(BgmType.OpeningHouseBgm);
+        for(float elapsed = 0; elapsed < fadeDuration; elapsed += Time.deltaTime)
+        {
+            AudioManager.Instance.SetBgmVolume(Mathf.Lerp(0f, 1f, elapsed / fadeDuration));
             yield return null;
         }
         
+        yield return new WaitForSeconds(houseCamDuration);
+        
+        townLights.SetActive(false);
+        
+        houseCam.enabled = false;
+        houseCam.gameObject.SetActive(false);
+    }
+
+    private IEnumerator RoomCoroutine()
+    {
+        roomCam.enabled = true;
+        roomCam.gameObject.SetActive(true);
+
+        AudioManager.Instance.SetBgmVolume(0.4f);
+        
+        for (int i = 0; i < roomCamDuration.Length; i++)
+        {
+            roomCam.transform.localPosition = roomCamPos[i];
+            roomCam.transform.rotation = Quaternion.Euler(roomCamRot[i]);
+            yield return new WaitForSeconds(roomCamDuration[i]);
+        }
+        
+        roomCam.enabled = false;
+        roomCam.gameObject.SetActive(false);
+    }
+
+    private IEnumerator LogoCoroutine()
+    {
+        logoCam.transform.localPosition = logoCamPos;
+        logoCam.transform.rotation = Quaternion.Euler(logoCamRot);
+        logoCam.enabled = true;
+        logoCam.gameObject.SetActive(true);
+        
+        logoImg.SetActive(false);
+        logoPanels.SetActive(true);
+        
+        leftPaddingRect.sizeDelta = Vector2.zero;
+        rightPaddingRect.sizeDelta = Vector2.zero;
+        topPaddingRect.sizeDelta = Vector2.zero;
+        bottomPaddingRect.sizeDelta = Vector2.zero;
+        
+        yield return new WaitForSeconds(beforeShrinkDuration);
+        yield return ShrinkingCoroutine();
+        yield return new WaitForSeconds(shrinkHoldingDuration);
+        yield return LogoHoldingCoroutine();
+        
+        
+        logoCam.enabled = false;
+        logoPanels.SetActive(false);
+    }
+
+    private IEnumerator ShrinkingCoroutine()
+    {
+        Vector2 maxHeightSize = new Vector2(0f, _maxHeight);
+        Vector2 maxWidthSize = new Vector2(_maxWidth, 0f);
+        
+        Vector2 leftPaddingSize = new Vector2(leftPadding, _maxHeight);
+        Vector2 rightPaddingSize = new Vector2(rightPadding, _maxHeight);
+        Vector2 bottomPaddingSize = new Vector2(_maxWidth, bottomPadding);
+        Vector2 topPaddingSize = new Vector2(_maxWidth, topPadding);
+        
+        AudioManager.Instance.SetSfxVolume(0.3f);
+        AudioManager.Instance.SetSfxPitch(0.55f);
+        AudioManager.Instance.PlaySfx2D(SfxType.OpeningShrinkSfx);
+        float currBgmVolume = AudioManager.Instance.BgmVolume;
+        for (float elapsed = 0f; elapsed < shrinkDuration; elapsed += Time.deltaTime)
+        {
+            AudioManager.Instance.SetBgmVolume(Mathf.Lerp(currBgmVolume, 0f, elapsed / shrinkDuration));
+            leftPaddingRect.sizeDelta = Vector2.Lerp(maxHeightSize, leftPaddingSize, elapsed / shrinkDuration);
+            rightPaddingRect.sizeDelta = Vector2.Lerp(maxHeightSize, rightPaddingSize, elapsed / shrinkDuration);
+            bottomPaddingRect.sizeDelta = Vector2.Lerp(maxWidthSize, bottomPaddingSize, elapsed / shrinkDuration);
+            topPaddingRect.sizeDelta = Vector2.Lerp(maxWidthSize, topPaddingSize, elapsed / shrinkDuration);
+            yield return null;
+        }
         AudioManager.Instance.SetSfxPitch(1f);
         AudioManager.Instance.StopBgm();
         AudioManager.Instance.SetBgmVolume(1f);
-        
-        // StandUp
-        Track.Hamster.Standup(standUpDuration);
-        Common.Logo.SetActive(true);
+    }
+
+    private IEnumerator LogoHoldingCoroutine()
+    {
+        hamster.DOLocalMove(hamsterEndPos, standUpDuration);
+        hamster.DORotate(hamsterEndRot, standUpDuration);
+        logoImg.SetActive(true);
         AudioManager.Instance.SetSfxVolume(0.5f);
         AudioManager.Instance.PlaySfx2D(SfxType.OpeningLogoSfx);
         yield return new WaitForSeconds(0.5f);
-        yield return new WaitForSeconds(holdLogoDuration);
+        yield return new WaitForSeconds(logoHoldingDuration);
         AudioManager.Instance.SetSfxVolume(1f);
-        
-        foreach(RectTransform padding in Common.Paddings) padding.sizeDelta = Vector2.zero;
-        Common.Logo.SetActive(false);
     }
 
-    private IEnumerator CutScene()
+    private IEnumerator CutSceneCoroutine()
     {
-        // cover 및 bgm 초기화
         AudioManager.Instance.SetBgmVolume(0.1f);
         AudioManager.Instance.PlayBgm(BgmType.OpeningCutSceneBgm);
         
-        foreach(GameObject cover in Common.Covers)
+        foreach(GameObject cover in covers)
             cover.SetActive(true);
+        
+        foreach(Camera cam in cutSceneCams)
+        {
+            cam.gameObject.SetActive(true);
+            cam.enabled = true;
+        }
         
         cutScenePanels.SetActive(true);
 
         subtitleText.text = _subtitles[0];
         yield return new WaitForSeconds(beforeCutsceneDuration);
-        
-        _camPool.ReturnObject(_currCam);
 
         for (int i = 0; i < covers.Length; i++)
         {
-            Common.Covers[i].SetActive(false);
+            covers[i].SetActive(false);
             subtitleText.text = _subtitles[i+1];
-            if (i < 6)
+            if (i < cutSceneCams.Length)
             {
-                // 카메라 초기화
-                _currCam = _camPool.GetObject();
-                _currCam.transform.SetParent(Track.Transform);
-                _currCam.transform.localPosition = cutSceneCamsTransStartPos[i];
-                _currCam.transform.rotation = Quaternion.Euler(cutSceneCamsTransStartRot[i]);
-                _currCam.GetComponent<Camera>().rect = new Rect(cutSceneCamsRectPos[i], cutSceneCamsRectRot[i]);
-                _currCam.SetActive(true);
-                
                 yield return new WaitForSeconds(cutSceneHoldingDuration[i]);
-                
-                _currCam.transform.DOLocalMove(cutSceneCamsTransEndPos[i], cutSceneCamWalkDuration[i]);
-                _currCam.transform.DORotate(cutSceneCamsTransEndRot[i], cutSceneCamWalkDuration[i]);
+                cutSceneCams[i].transform.DOLocalMove(cutSceneCamsTransEndPos[i], cutSceneCamWalkDuration[i]);
+                cutSceneCams[i].transform.DORotate(cutSceneCamsTransEndRot[i], cutSceneCamWalkDuration[i]);
             }
             yield return new WaitForSeconds(cutSceneDuration[i]);
         }
@@ -221,148 +248,4 @@ public class OpeningManager : CinematicSequence
         subtitleText.text = _subtitles[8];
         yield return new WaitForSeconds(afterCutsceneDuration);
     }
-
-    public override void Skip()
-    {
-        StopAllCoroutines();
-        StartCoroutine(SkipCoroutine());
-    }
-
-    private IEnumerator SkipCoroutine()
-    {
-        FadeOutScreen(cutSceneFadeOutDuration, Color.black);
-        yield return FadeOutBgm(cutSceneFadeOutDuration);
-        CinematicSceneManager.Instance.Load("MainScene");
-    }
-
-    // public IEnumerator OpeningCoroutine(float fadeDuration)
-    // {
-    //     openingCanvas.SetActive(true);
-    //     yield return HouseCoroutine(fadeDuration);
-    //     yield return RoomCoroutine();
-    //     yield return LogoCoroutine();
-    //     yield return CutSceneCoroutine();
-    // }
-
-    // private IEnumerator HouseCoroutine(float fadeDuration)
-    // {
-    //     townLights.SetActive(true);
-    //     
-    //     houseCam.transform.localPosition = houseCamPos;
-    //     houseCam.transform.rotation = Quaternion.Euler(houseCamRot);
-    //     houseCam.enabled = true;
-    //     houseCam.gameObject.SetActive(true);
-    //     
-    //     AudioManager.Instance.PlayBgm(BgmType.OpeningHouseBgm);
-    //     for(float elapsed = 0; elapsed < fadeDuration; elapsed += Time.deltaTime)
-    //     {
-    //         AudioManager.Instance.SetBgmVolume(Mathf.Lerp(0f, 1f, elapsed / fadeDuration));
-    //         yield return null;
-    //     }
-    //     
-    //     yield return new WaitForSeconds(houseCamDuration);
-    //     
-    //     townLights.SetActive(false);
-    //     
-    //     houseCam.enabled = false;
-    //     houseCam.gameObject.SetActive(false);
-    // }
-    //
-    // private IEnumerator RoomCoroutine()
-    // {
-    //     roomCam.enabled = true;
-    //     roomCam.gameObject.SetActive(true);
-    //
-    //     AudioManager.Instance.SetBgmVolume(0.4f);
-    //     
-    //     // for (int i = 0; i < roomCamDuration.Length; i++)
-    //     // {
-    //     //     roomCam.transform.localPosition = roomCamPos[i];
-    //     //     roomCam.transform.rotation = Quaternion.Euler(roomCamRot[i]);
-    //     //     yield return new WaitForSeconds(roomCamDuration[i]);
-    //     // }
-    //     //
-    //
-    //     yield return null;
-    //     roomCam.enabled = false;
-    //     roomCam.gameObject.SetActive(false);
-    // }
-
-    // private IEnumerator ShrinkingCoroutine()
-    // {
-    //     Vector2 maxHeightSize = new Vector2(0f, _maxHeight);
-    //     Vector2 maxWidthSize = new Vector2(_maxWidth, 0f);
-    //     
-    //     Vector2 leftPaddingSize = new Vector2(leftPadding, _maxHeight);
-    //     Vector2 rightPaddingSize = new Vector2(rightPadding, _maxHeight);
-    //     Vector2 bottomPaddingSize = new Vector2(_maxWidth, bottomPadding);
-    //     Vector2 topPaddingSize = new Vector2(_maxWidth, topPadding);
-    //     
-    //     AudioManager.Instance.SetSfxVolume(0.3f);
-    //     AudioManager.Instance.SetSfxPitch(0.55f);
-    //     AudioManager.Instance.PlaySfx2D(SfxType.OpeningShrinkSfx);
-    //     float currBgmVolume = AudioManager.Instance.BgmVolume;
-    //     for (float elapsed = 0f; elapsed < shrinkDuration; elapsed += Time.deltaTime)
-    //     {
-    //         AudioManager.Instance.SetBgmVolume(Mathf.Lerp(currBgmVolume, 0f, elapsed / shrinkDuration));
-    //         leftPaddingRect.sizeDelta = Vector2.Lerp(maxHeightSize, leftPaddingSize, elapsed / shrinkDuration);
-    //         rightPaddingRect.sizeDelta = Vector2.Lerp(maxHeightSize, rightPaddingSize, elapsed / shrinkDuration);
-    //         bottomPaddingRect.sizeDelta = Vector2.Lerp(maxWidthSize, bottomPaddingSize, elapsed / shrinkDuration);
-    //         topPaddingRect.sizeDelta = Vector2.Lerp(maxWidthSize, topPaddingSize, elapsed / shrinkDuration);
-    //         yield return null;
-    //     }
-    //     AudioManager.Instance.SetSfxPitch(1f);
-    //     AudioManager.Instance.StopBgm();
-    //     AudioManager.Instance.SetBgmVolume(1f);
-    // }
-
-    // private IEnumerator LogoHoldingCoroutine()
-    // {
-    //     hamster.DOLocalMove(hamsterEndPos, standUpDuration);
-    //     hamster.DORotate(hamsterEndRot, standUpDuration);
-    //     logoImg.SetActive(true);
-    //     AudioManager.Instance.SetSfxVolume(0.5f);
-    //     AudioManager.Instance.PlaySfx2D(SfxType.OpeningLogoSfx);
-    //     yield return new WaitForSeconds(0.5f);
-    //     yield return new WaitForSeconds(logoHoldingDuration);
-    //     AudioManager.Instance.SetSfxVolume(1f);
-    // }
-
-    // private IEnumerator CutSceneCoroutine()
-    // {
-    //     AudioManager.Instance.SetBgmVolume(0.1f);
-    //     AudioManager.Instance.PlayBgm(BgmType.OpeningCutSceneBgm);
-    //     
-    //     foreach(GameObject cover in covers)
-    //         cover.SetActive(true);
-    //     
-    //     foreach(Camera cam in cutSceneCams)
-    //     {
-    //         cam.gameObject.SetActive(true);
-    //         cam.enabled = true;
-    //     }
-    //     
-    //     cutScenePanels.SetActive(true);
-    //
-    //     subtitleText.text = _subtitles[0];
-    //     yield return new WaitForSeconds(beforeCutsceneDuration);
-    //
-    //     for (int i = 0; i < covers.Length; i++)
-    //     {
-    //         covers[i].SetActive(false);
-    //         subtitleText.text = _subtitles[i+1];
-    //         if (i < cutSceneCams.Length)
-    //         {
-    //             yield return new WaitForSeconds(cutSceneHoldingDuration[i]);
-    //             cutSceneCams[i].transform.DOLocalMove(cutSceneCamsTransEndPos[i], cutSceneCamWalkDuration[i]);
-    //             cutSceneCams[i].transform.DORotate(cutSceneCamsTransEndRot[i], cutSceneCamWalkDuration[i]);
-    //         }
-    //         yield return new WaitForSeconds(cutSceneDuration[i]);
-    //     }
-    //     
-    //     subtitleText.text = _subtitles[8];
-    //     yield return new WaitForSeconds(afterCutsceneDuration);
-    // }
-
-    
 }
