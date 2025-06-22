@@ -88,6 +88,17 @@ public class PausedMenuController : MonoBehaviour
 		UIManager.CloseStore();
 	}
 
+	public void OpenGuide() 
+	{
+		HLogger.General.Debug("Paused Menu: 가이드 열기");
+		uIManager.OpenGuide();
+	}
+
+	public void CloseGuide()
+	{
+		uIManager.CloseGuide();
+	}
+
 	public void GoBackToTitle()
 	{
 		HLogger.General.Debug("Paused Menu: 타이틀로 돌아가기");
