@@ -81,7 +81,7 @@ public class LevelOneController : MonoBehaviour, INextCheckpointObserver
     #region --- Checkpoint Observer Implementation ---
     public void OnCheckpointProgressUpdated(int activatedIndex, int totalCheckpoints)
     {
-        if (activatedIndex == 1 && !hasSequenceStarted)
+        if (activatedIndex == 2 && !hasSequenceStarted)
         {
             hasSequenceStarted = true;
             StartCoroutine(StartLevelSequence());

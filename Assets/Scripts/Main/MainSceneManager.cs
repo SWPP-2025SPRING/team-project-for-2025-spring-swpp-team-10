@@ -169,10 +169,10 @@ public class MainSceneManager : RuntimeSingleton<MainSceneManager>
             _mainSceneFacade.AltCursorControl(Input.GetKey(KeyCode.LeftAlt));
         }
 
-        
+
 
         // Ending 잘 되는지 Debugging 용
-        //if (Input.GetKeyDown(KeyCode.Backspace)) EndGame();
+        //if (Input.GetKeyDown(KeyCode.Alpha1)) EndGame();
     }
 
     private void AddCoinByPlaytime()
