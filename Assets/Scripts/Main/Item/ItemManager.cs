@@ -103,7 +103,8 @@ public class ItemManager : RuntimeSingleton<ItemManager>
 
     private bool isItemStartWithLocked(Item item)
     {
-        return (int)item.effectType >= (int)ItemEffectType.DualJump;
+        return (int)item.effectType >= (int)ItemEffectType.DualJump
+            || item.effectType == ItemEffectType.HamsterWire;
     }
 
 

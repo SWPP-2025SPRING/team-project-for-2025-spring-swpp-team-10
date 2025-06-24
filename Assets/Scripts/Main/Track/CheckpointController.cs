@@ -144,7 +144,7 @@ public class CheckpointController : MonoBehaviour
                 if (PlayerManager.Instance.skill.HasBoost())
                 {
                     UIManager.Instance.DoDialogue("Checkpoint(1)DialogueWithNoUnlock");
-                    UIManager.Instance.InformMessage("부스터를 소지하고 있어 100 코인을 획득하였습니다.");
+                    UIManager.Instance.InformMessage("부스터를 소지하고 있어 50 코인을 획득하였습니다.");
                     ItemManager.Instance.AddCoin(100);
                 }
                 else

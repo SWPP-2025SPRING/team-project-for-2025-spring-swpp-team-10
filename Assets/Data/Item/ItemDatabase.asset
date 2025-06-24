@@ -21,19 +21,19 @@ MonoBehaviour:
     levels:
     - level: 0
       value: 1
-      price: 100
+      price: 30
       label: 100%
     - level: 1
       value: 1.05
-      price: 100
+      price: 30
       label: 105%
     - level: 2
       value: 1.1
-      price: 120
+      price: 100
       label: 110%
     - level: 3
       value: 1.15
-      price: 120
+      price: 100
       label: 115%
     - level: 4
       value: 1.2
@@ -275,7 +275,7 @@ MonoBehaviour:
     levels:
     - level: 0
       value: 0
-      price: 100
+      price: 50
       label: 
   - id: 9
     name: "\uB354\uBE14 \uC810\uD504 "
